@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "988297617612",
+    "project_id": "park-it-now",
+    "storage_bucket": "park-it-now.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:988297617612:android:9b740cf277ac3788102269",
+        "android_client_info": {
+          "package_name": "com.example.park_it_now"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEMR4Q3WWxwx30WKUTicq2JoBxfgSgZW4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:988297617612:android:0c1ac7b824d1505a102269",
+        "android_client_info": {
+          "package_name": "com.example.parkit_now"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEMR4Q3WWxwx30WKUTicq2JoBxfgSgZW4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
