@@ -65,4 +65,6 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+    implementation 'com.mercadopago.android.px:checkout:4.+'
+}

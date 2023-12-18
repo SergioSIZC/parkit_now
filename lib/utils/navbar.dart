@@ -41,7 +41,7 @@ class _NavBarState extends State<NavBar> {
           currentPage == DrawerSections.perfil ? true : false, 'perfil'
         ),
         menuItem(2, 'Mis Autos', Icons.drive_eta,
-          currentPage == DrawerSections.misautos ? true : false, 'mobile-home'
+          currentPage == DrawerSections.misautos ? true : false, 'autos'
         ),
         menuItem(3, 'Ayuda y Soporte', Icons.help,
           currentPage == DrawerSections.ayudaysoporte ? true : false, 'mobile-home'

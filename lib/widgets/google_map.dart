@@ -1,15 +1,20 @@
 import 'dart:async';
+import 'dart:ffi';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:live_currency_rate/live_currency_rate.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_paypal_checkout/flutter_paypal_checkout.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:location/location.dart';
 import 'package:parkit_now/providers/location_service.dart';
 import 'package:parkit_now/utils/colors.dart';
+import 'package:parkit_now/utils/globals.dart' as globals;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MapScreen extends StatefulWidget {
@@ -23,6 +28,7 @@ class _MapScreenState extends State<MapScreen> {
   final Completer<GoogleMapController> _mapController = Completer<GoogleMapController>();
   
   String? uid;
+  String? montoConvertido;
   static const LatLng _pGooglePlex = LatLng(37.4223, -122.0848);
   static const LatLng _applePark = LatLng(37.3346, -122.0090);
   LatLng _searchedPoint = LatLng(0,0);
@@ -30,6 +36,7 @@ class _MapScreenState extends State<MapScreen> {
   List<Marker> _markers = [];
   late BitmapDescriptor userMarker;
   late BitmapDescriptor estMarker;
+  String email='sb-yhl9v28825577@personal.example.com';
   
 
   TextEditingController _searchController = TextEditingController();
@@ -167,7 +174,7 @@ class _MapScreenState extends State<MapScreen> {
         String markerTitle = doc['nombre'];
         int cupos_disponibles=doc['cupos_disponibles'];
         int cupos_totales=doc['cupos_totales'];
-        int tarifa_hora = doc['tarifa'][1];
+        int tarifa_minutos = doc['tarifa'][0];
         String hApert = doc['horarios'][0]['apertura'];
         String hCierre = doc['horarios'][0]['cierre'];
 
@@ -182,7 +189,7 @@ class _MapScreenState extends State<MapScreen> {
               position: markerLatLng,
               infoWindow: InfoWindow(title: markerTitle),
               onTap: (){
-                _mostrarInfoEstacionamiento(context, markerTitle, cupos_disponibles, cupos_disponibles,tarifa_hora, hApert.toString(), hCierre.toString(), id, lat, lng);
+                _mostrarInfoEstacionamiento(context, markerTitle, cupos_disponibles, cupos_disponibles,tarifa_minutos, hApert.toString(), hCierre.toString(), id, lat, lng);
               }
             ),
           );
@@ -190,10 +197,23 @@ class _MapScreenState extends State<MapScreen> {
       
     });
   }
-  
+  Future<void> getUSD(double monto) async{
+    CurrencyRate rate = await LiveCurrencyRate.convertCurrency("USD", "CLP",1);
+    montoConvertido= (monto/rate.result).toStringAsFixed(2);
+    print('Monto $monto -> Rate ${rate.result} Convertidoooooooo: ${double.parse(montoConvertido!)}');
+    setState(() {
+      
+    });
+  }
+
   Future<void> _mostrarInfoEstacionamiento(BuildContext context, String nombre, int disp, int total, int tarifa, String apert, String cierre, String? id,double lat, double lng) async {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+    final double montoCLP= tarifa*60;
+    print('Tarifa Minuto: ${tarifa} Tarifa Hora: ${montoCLP} ');
+    await getUSD(montoCLP);
+    
+    // ignore: use_build_context_synchronously
     return showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -247,7 +267,7 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   Spacer(),
                   Text(
-                    'Tarifa: ${tarifa.toString()}',
+                    'Tarifa por minuto: ${tarifa.toString()}',
                     style: TextStyle(
                       fontSize: 16,
                     ),
@@ -262,6 +282,7 @@ class _MapScreenState extends State<MapScreen> {
                   Spacer(),
                 ],
               ),
+              Text('Tarifa en Dolares: ${montoConvertido}'),
               
               
               
@@ -271,39 +292,106 @@ class _MapScreenState extends State<MapScreen> {
                   Spacer(),
                   ElevatedButton(
                     onPressed: () async {
-                      CollectionReference<Map<String, dynamic>> user = await FirebaseFirestore.instance.collection('usuarios');
-                        DocumentSnapshot<Map<String, dynamic>> userDoc = await user.doc(uid).get();
-                        Map<String,dynamic>? data = userDoc.data();
-                        if(total==disp){
-                          CollectionReference estRef = FirebaseFirestore.instance.collection('estacionamientos');
-                          DocumentSnapshot estDoc = await estRef.doc(id).get();
+                      
+                      var tarifaAPagar = tarifa*60;
+                      final tarifaString = tarifaAPagar.toString();
+                      Navigator.of(context).push(MaterialPageRoute(
+                        builder: (BuildContext context) => PaypalCheckout(
+                          sandboxMode: true,
+                          clientId: globals.ppClientID,
+                          secretKey: globals.ppClientSecret,
+                          returnURL: "success.snippetcoder.com",
+                          cancelURL: "cancel.snippetcoder.com",
+                          transactions:  [
+                            {
+                              "amount": {
+                                "total": double.parse(montoConvertido!),
+                                "currency": "USD",
+                                "details": {
+                                  "subtotal": double.parse(montoConvertido!),
+                                  "shipping": '0',
+                                  "shipping_discount": 0
+                                }
+                              },
+                              "description": "The payment transaction description.",
+                              // "payment_options": {
+                              //   "allowed_payment_method":
+                              //       "INSTANT_FUNDING_SOURCE"
+                              // },
+                              "item_list": {
+                                "items": [
+                                  {
+                                    "name": "Reserva",
+                                    "quantity": 1,
+                                    "price": double.parse(montoConvertido!),
+                                    "currency": "USD"
+                                  },                                  
+                                ],
+                
+                                // shipping address is not required though
+                                //   "shipping_address": {
+                                //     "recipient_name": "Raman Singh",
+                                //     "line1": "Delhi",
+                                //     "line2": "",
+                                //     "city": "Delhi",
+                                //     "country_code": "IN",
+                                //     "postal_code": "11001",
+                                //     "phone": "+00000000",
+                                //     "state": "Texas"
+                                //  },
+                              },
+                              "payee":{
+                                "email": email,
+                              }
+                            }
+                          ],
+                          note: "Contact us for any questions on your order.",
+                          onSuccess: (Map params) async {
+                            print("onSuccess: $params");
+                            // CollectionReference<Map<String, dynamic>> user = await FirebaseFirestore.instance.collection('usuarios');
+                            //   DocumentSnapshot<Map<String, dynamic>> userDoc = await user.doc(uid).get();
+                            //   Map<String,dynamic>? data = userDoc.data();
+                            //   if(total==disp){
+                            //     CollectionReference estRef = FirebaseFirestore.instance.collection('estacionamientos');
+                            //     DocumentSnapshot estDoc = await estRef.doc(id).get();
 
-                          CollectionReference reservas = await FirebaseFirestore.instance.collection('reservas');
-                          DocumentReference reservaRef = await reservas.add({
-                            'usuario': userDoc.reference,
-                            'estacionamiento': estDoc.reference,
-                            'hora': FieldValue.serverTimestamp(),
-                            'tarifa': tarifa,
+                            //     CollectionReference reservas = await FirebaseFirestore.instance.collection('reservas');
+                            //     DocumentReference reservaRef = await reservas.add({
+                            //       'usuario': userDoc.reference,
+                            //       'estacionamiento': estDoc.reference,
+                            //       'hora': FieldValue.serverTimestamp(),
+                            //       'tarifa': tarifa,
 
-                          });
-                        
-                          await estRef.doc(id).update({
-                            'reservas': FieldValue.arrayUnion([reservaRef])
-                          });
-                          print(userDoc.reference);
-                          print(data);
-                          print('Reservar');
-                          disp--;
-                          await estRef.doc(id).update({
-                            'cupos_disponibles': disp,
-                            
-                          }).then((value){
-                            _addMarkers();
-                          });
-                          setState(() {
-                            Navigator.of(context).pop();
-                          });
-                        }
+                            //     });
+                              
+                            //     await estRef.doc(id).update({
+                            //       'reservas': FieldValue.arrayUnion([reservaRef])
+                            //     });
+                            //     print(userDoc.reference);
+                            //     print(data);
+                            //     print('Reservar');
+                            //     disp--;
+                            //     await estRef.doc(id).update({
+                            //       'cupos_disponibles': disp,
+                                  
+                            //     }).then((value){
+                            //       _addMarkers();
+                            //     });
+                              //   setState(() {
+                              //     Navigator.of(context).pop();
+                              //   });
+                              // }
+                          },
+                          onError: (error) {
+                            print("onError: $error");
+                            Navigator.pop(context);
+                          },
+                          onCancel: () {
+                            print('cancelled:');
+                          },
+                        ),
+                      ));
+                      // Navigator.pushNamed(context, 'pago');
                     },
                     child: Text('Reservar',style: TextStyle(color: AppColors.white),),
                     style: ElevatedButton.styleFrom(

@@ -2,6 +2,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
+import 'package:parkit_now/pages/mis_autos.dart';
+import 'package:parkit_now/pages/pago.dart';
+import 'package:parkit_now/utils/globals.dart' as globals;
 
 import 'package:flutter_device_type/flutter_device_type.dart';
 import 'package:parkit_now/firebase_options.dart';
@@ -21,6 +24,7 @@ import 'package:parkit_now/pages/web_home.dart';
 import 'package:parkit_now/pages/web_login.dart';
 import 'package:parkit_now/widgets/google_map.dart';
 
+
 import 'utils/colors.dart';
 
 Future<void> main() async {
@@ -35,11 +39,11 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  
+ 
   @override
   Widget build(BuildContext context) {
     FirebaseFirestore.instance.collection('alertas').snapshots();
-
+    
 
     final isWeb = identical(0,0.0);
     return MaterialApp(
@@ -78,6 +82,8 @@ class MyApp extends StatelessWidget {
         'web-login':(BuildContext context) => WebLogin(),
         'mapa': (BuildContext context) => MapScreen(),
         'perfil': (BuildContext context) => MiPerfil(),
+        'pago': (BuildContext context) => PagoPage(),
+        'autos': (BuildContext context) =>MisAutos(),
       }
     );
     

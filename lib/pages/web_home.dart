@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:parkit_now/widgets/dropdownBtn.dart';
 import 'package:flutter/material.dart';
 import 'package:parkit_now/data/get_estacionamiento_data.dart';
 
@@ -81,22 +82,12 @@ class _WebHomeState extends State<WebHome> {
                       children: [
                         Column(
                           children: [
-                            Text('Juan Pérez',
-                                style: TextStyle(
-                                    decoration: TextDecoration.none,
-                                    color: Colors.black,
-                                    fontSize: 20)),
-                            Text('Encargado',
-                                style: TextStyle(
-                                    decoration: TextDecoration.none,
-                                    color: Colors.grey,
-                                    fontSize: 15))
+                            Material(
+                              child: MyDropDownButton(),
+                            )
                           ],
                         ),
-                        Image(
-                          image: AssetImage('assets/images/user.png'),
-                          width: 50,
-                        )
+                        
                       ],
                     )
                   ],
