@@ -7,6 +7,8 @@ class NoSesionHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(  
       resizeToAvoidBottomInset: false,    
       body: Container(
@@ -21,12 +23,24 @@ class NoSesionHomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
            SizedBox(height: 40.0,),
-           Icon(
-            Icons.local_parking, 
-            size: 200, 
-            color:Colors.black
-           ),
-           SizedBox(height: 400.0,),
+           Container(
+                      height: screenHeight * 0.20,
+                      width: screenWidth * 0.44,
+                      margin: EdgeInsets.only(top: screenHeight * 0.08),
+                      padding: EdgeInsets.all(screenHeight*0.005),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          border:
+                              Border.all(width: 4, color: AppColors.primary),
+                          borderRadius: BorderRadius.circular(25)),
+                      child: Image(
+                        image: AssetImage('assets/images/estacionamiento.png'),
+                        height: screenHeight * 0.5,
+                        width: screenWidth * 0.5,
+                        color: AppColors.primary,
+                      ),
+                    ),
+           SizedBox(height: screenHeight*0.5,),
            _crearBoton(context),
             
           ],
@@ -45,7 +59,7 @@ class NoSesionHomePage extends StatelessWidget {
             width: 300.0,
             child: ElevatedButton(
               onPressed: (){
-                Navigator.pushReplacementNamed(context, 'mobile-home', arguments: inicio);
+                Navigator.pushReplacementNamed(context, 'login-register', arguments: inicio);
               }, 
               child: Text('Iniciar Sesión', style: TextStyle(color: AppColors.white),),
               style: ElevatedButton.styleFrom(

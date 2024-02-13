@@ -17,6 +17,7 @@ class _WebHomeState extends State<WebHome> {
   Color buttonColor1 = Colors.white;
   Color buttonColor2 = Colors.white;
   String? uid;
+  String encargado = '';
   List<String> docsIDs = [];
 
 
@@ -26,8 +27,29 @@ class _WebHomeState extends State<WebHome> {
     print(action);
     uid = action;
     print('UID: ${uid}');
+    obtenerEncargados();
   }
+  void obtenerEncargados() async {
+        try {
+        // Reemplaza 'nombre_coleccion' con el nombre real de tu colección en Firebase
+        DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+            .collection('estacionamientos')
+            .doc(uid)
+            .get();
 
+        // Verificamos si el documento existe
+        if (documentSnapshot.exists) {
+          // Obtenemos el campo 'encargado' y lo almacenamos en la variable
+          encargado = documentSnapshot['encargado'];
+          // Actualizamos el estado para que la interfaz de usuario refleje los cambios
+          setState(() {});
+        } else {
+          print('El documento con UID $uid no existe.');
+        }
+      } catch (error) {
+        print('Error al obtener el encargado: $error');
+      }
+    }
   void initState(){
     getUID();
     super.initState();
@@ -64,7 +86,7 @@ class _WebHomeState extends State<WebHome> {
                   children: [
                     Column(
                       children: [
-                        Text('Bienvenido Juan',
+                        Text('Bienvenido ${encargado.split(' ')[0]}',
                             style: TextStyle(
                               decoration: TextDecoration.none,
                               color: Colors.black,

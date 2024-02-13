@@ -122,7 +122,7 @@ class _SideLayoutState extends State<SideLayout> {
               'Mi Cuenta',
               Icons.person_outline,
               currentPage == DrawerSections.micuenta ? true : false,
-              'registrar-est'),
+              'mi-cuenta'),
           menuItem(
               3,
               'Estacionamiento',

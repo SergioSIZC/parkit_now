@@ -1,7 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:parkit_now/utils/colors.dart';
+import 'package:parkit_now/widgets/dropdownBtn.dart';
 import 'package:parkit_now/widgets/web_side_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EditarEstacionamiento extends StatefulWidget {
   const EditarEstacionamiento({super.key});
@@ -13,18 +16,70 @@ class EditarEstacionamiento extends StatefulWidget {
 class _EditarEstacionamientoState extends State<EditarEstacionamiento> {
   late Stream<DateTime> fecha;
   late Stream<DateTime> hora;
-
+  String? uid;
+  String? name;
+  String? direccion;
+  String? telefono;
+  String? tarifa;
+  String? hApert;
+  String? hCierre;
   TextEditingController _nameController = new TextEditingController();
   TextEditingController _phoneController = new TextEditingController();
 
   TextEditingController _addressController = new TextEditingController();
   TextEditingController _tarifaController = new TextEditingController();
   TextEditingController _horarioController = new TextEditingController();
+  late TimeOfDay inTime;
+  late TimeOfDay outTime;
+  _selectTime(bool inout) async{
+    if(inout) {
+      TimeOfDay? picker = await showTimePicker(context: context, initialTime: inTime);
+      if(picker != null){
+        setState(() {
+          inTime=picker;
+        });
+      }
+    }else{
+      TimeOfDay? picker = await showTimePicker(context: context, initialTime: outTime);
+      if(picker != null){
+        setState(() {
+          outTime=picker;
+        });
+      }
+    }
+  }
+  Future getUID() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? action = prefs.getString('userId');
+    print(action);
+    uid = action;
+    print('UID: ${uid}');
+    obtenerEstData(uid);
+    
+  }
+  void obtenerEstData(String? uid) async {
+    
+      DocumentReference estRef = FirebaseFirestore.instance.collection('estacionamientos').doc(uid);
+      DocumentSnapshot estSnap = await estRef.get();
+      if(estSnap.exists){
+        Map<String, dynamic> estData =estSnap.data() as Map<String, dynamic>;
+        
+        
+        
+        print('Datos: $estData');
+        name = estData['nombre'];
+        print(name);
+      }
+      
+    
+  }
   @override
   void initState() {
+    getUID();
     hora = Stream.periodic(Duration(seconds: 1), (_) => DateTime.now());
     fecha = Stream.periodic(Duration(seconds: 1), (_) => DateTime.now());
-
+    inTime = TimeOfDay.now();
+    outTime = TimeOfDay.now();
     super.initState();
   }
 
@@ -41,11 +96,10 @@ class _EditarEstacionamientoState extends State<EditarEstacionamiento> {
             SizedBox(height: 20,),
             Row(
               children: [
-                Container(                    
-                    height: screenHeight * 0.09,
-                    child: Image(
-                        image:
-                            AssetImage('assets/images/estacionamiento.png'))),
+                Icon(
+                  Icons.local_parking,
+                  size: 90,
+                ),
                 Text(
                   'Park-iT Now',
                   style: TextStyle(
@@ -54,24 +108,9 @@ class _EditarEstacionamientoState extends State<EditarEstacionamiento> {
                   ),
                 ),
                 Expanded(child: Container()),
-                Column(
-                  children: [
-                    Text('Juan Pérez',
-                        style: TextStyle(
-                            decoration: TextDecoration.none,
-                            color: AppColors.primary,
-                            fontSize: 20)),
-                    Text('Encargado',
-                        style: TextStyle(
-                            decoration: TextDecoration.none,
-                            color: Colors.grey,
-                            fontSize: 15))
-                  ],
-                ),
-                Image(
-                  image: AssetImage('assets/images/user.png'),
-                  width: 50,
-                )
+                Material(
+                              child: MyDropDownButton(),
+                            )
               ],
             ),
             SizedBox(
@@ -171,8 +210,12 @@ class _EditarEstacionamientoState extends State<EditarEstacionamiento> {
                             height: screenWidth * 0.025,
                             child: Align(
                                 alignment: Alignment.center,
-                                child: textInput('Estacionamiento Tobías',
-                                    _nameController, 5.0, false)),
+                                child: textInput('$name',
+                                    _nameController, 5.0, false)
+
+                                
+
+                              ),
                           )
                         ]),
                       ),
@@ -202,7 +245,7 @@ class _EditarEstacionamientoState extends State<EditarEstacionamiento> {
                             height: 35,
                             child: Align(
                                 alignment: Alignment.center,
-                                child: textInput('Av. Libertad #408',
+                                child: textInput('direction',
                                     _addressController, 5.0, false)),
                           )
                         ]),
@@ -248,43 +291,68 @@ class _EditarEstacionamientoState extends State<EditarEstacionamiento> {
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
                         ),
-                        child: Row(children: [
-                          Text("Horario(s) de atención: ",
-                              style: TextStyle(
+                        child: Row(
+                                                children: [
+                        Card(
+                          elevation: 0.0,
+                          child: Container(
+                            decoration: BoxDecoration(color: Colors.grey[200]),
+                            child: Row(children: [
+                              Text("Hora de Apertura: ", style: TextStyle(
                                 decoration: TextDecoration.none,
                                 color: AppColors.primary,
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
                               )),
-                          SizedBox(
-                            width: 87,
+                              SizedBox(
+                                width: screenWidth*0.005,
+                              ),
+                              Container(
+                                width: screenWidth*0.08,
+                                height: screenHeight*0.04,
+                                child: ElevatedButton(onPressed: (){
+                                  setState(() {
+                                    _selectTime(true);
+                                  });
+                                }, child: Text('${inTime.format(context)}'),style:ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  
+                                )),
+                              )
+                            ]),
                           ),
-                          Row(
-                            children: [
-                              Container(
-                                width: 175,
-                                height: 35,
-                                child: Align(
-                                    alignment: Alignment.center,
-                                    child: textInput('09:00 - 22:00',
-                                        _horarioController, 5.0, false)),
+                        ),
+                                              Card(
+                          elevation: 0.0,
+                          child: Container(
+                            decoration: BoxDecoration(color: Colors.grey[200]),
+                            child: Row(children: [
+                              Text("Hora de Cierre:",style: TextStyle(
+                                decoration: TextDecoration.none,
+                                color: AppColors.primary,
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                              )),
+                              SizedBox(
+                                width: screenWidth*0.005,
                               ),
                               Container(
-                                width: 175,
-                                height: 35,
-                                child: ElevatedButton(
-                                  child: Text(' + | Agregar Horario'),
-                                  style: ElevatedButton.styleFrom(
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(25),
-                                      ),
-                                      backgroundColor: Colors.grey[400]),
-                                  onPressed: () {},
-                                ),
-                              ),
-                            ],
-                          )
-                        ]),
+                                width: screenWidth*0.08,
+                                height: screenHeight*0.04,
+                                child: ElevatedButton(onPressed: (){
+                                  setState(() {
+                                    _selectTime(false);
+                                  });
+                                }, child: Text(' ${outTime.format(context)}'),style:ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  
+                                )),
+                              )
+                            ]),
+                          ),
+                        ),
+                                                ],
+                                              ),
                       ),
                     ),
                     SizedBox(
@@ -305,7 +373,7 @@ class _EditarEstacionamientoState extends State<EditarEstacionamiento> {
                                 fontWeight: FontWeight.w600,
                               )),
                           SizedBox(
-                            width: 220,
+                            width: screenWidth*0.05,
                           ),
                           Row(
                             children: [

@@ -55,98 +55,126 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Añadir un GlobalKey para obtener el contexto del Scaffold
+
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+
       resizeToAvoidBottomInset: false,
-      body: Container(
-        color: Colors.grey.shade200,
-        child: Stack(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(30),
-              child: Image(
-                image: AssetImage('assets/images/estacionamientos2.jpg'),
-              ),
-            ),
-            Positioned(
-              child: Center(
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 90,
+      body: SingleChildScrollView(
+        child: Container(
+          height: screenHeight,
+          color: Colors.grey.shade200,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Stack(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child: Image(
+                      image: AssetImage('assets/images/estacionamientos2.jpg'),
                     ),
-                    Icon(
-                      Icons.local_parking,
-                      color: Colors.black,
-                      size: 200,
-                    ),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(50),
-                      child: Container(
-                          color: Colors.white,
-                          height: screenHeight * 0.6,
-                          width: 390,
+                  ),
+                  SingleChildScrollView(
+                    child: Positioned(
+                      child: Center(
+                        child: Container(
+                          height: screenHeight,
                           child: Column(
                             children: [
-                              Column(
-                                children: [
-                                  Container(
-                                    margin: EdgeInsets.symmetric(
-                                      vertical: 30,
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                              SizedBox(
+                                height: 90,
+                              ),
+                              Container(
+                                height: screenHeight * 0.20,
+                                width: screenWidth * 0.44,
+                                margin: EdgeInsets.only(bottom: screenHeight * 0.08),
+                                padding: EdgeInsets.all(screenHeight*0.005),
+                                decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    border:
+                                        Border.all(width: 4, color: AppColors.primary),
+                                    borderRadius: BorderRadius.circular(25)),
+                                child: Image(
+                                  image: AssetImage('assets/images/estacionamiento.png'),
+                                  height: screenHeight * 0.5,
+                                  width: screenWidth * 0.5,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(50),
+                                child: Container(
+                                    color: Colors.white,
+                                    height: screenHeight * 0.6,
+                                    width: 390,
+                                    child: Column(
                                       children: [
-                                        SizedBox(
-                                          height: 60.0,
-                                          width: screenWidth * 0.9,
-                                          child: AnimatedButtonBar(
-                                              radius: 50.0,
-                                              invertedSelection: true,
-                                              elevation: 5,
-                                              foregroundColor:
-                                                  AppColors.primary,
-                                              backgroundColor:
-                                                  Colors.grey.shade100,
-                                              children: [
-                                                ButtonBarEntry(
-                                                    child: Text('Ingresar'),
-                                                    onTap: () {
-                                                      setState(() {
-                                                        showInputs = true;
-                                                      });
-                                                    }),
-                                                ButtonBarEntry(
-                                                    child: Text('Nueva Cuenta'),
-                                                    onTap: () {
-                                                      setState(() {
-                                                        showInputs = false;
-                                                      });
-                                                    })
-                                              ]),
-                                        )
+                                        Column(
+                                          children: [
+                                            Container(
+                                              margin: EdgeInsets.symmetric(
+                                                vertical: 30,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  SizedBox(
+                                                    height: 60.0,
+                                                    width: screenWidth * 0.9,
+                                                    child: AnimatedButtonBar(
+                                                        radius: 50.0,
+                                                        invertedSelection: true,
+                                                        elevation: 5,
+                                                        foregroundColor:
+                                                            AppColors.primary,
+                                                        backgroundColor:
+                                                            Colors.grey.shade100,
+                                                        children: [
+                                                          ButtonBarEntry(
+                                                              child: Text('Ingresar'),
+                                                              onTap: () {
+                                                                setState(() {
+                                                                  showInputs = true;
+                                                                });
+                                                              }),
+                                                          ButtonBarEntry(
+                                                              child: Text('Nueva Cuenta'),
+                                                              onTap: () {
+                                                                setState(() {
+                                                                  showInputs = false;
+                                                                });
+                                                              })
+                                                        ]),
+                                                  )
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              child: showInputs
+                                                  ? _crearLogin(
+                                                      context, screenHeight, screenWidth)
+                                                  : _crearRegister(
+                                                      screenHeight, screenWidth),
+                                            )
+                                          ],
+                                        ),
                                       ],
-                                    ),
-                                  ),
-                                  Container(
-                                    child: showInputs
-                                        ? _crearLogin(
-                                            context, screenHeight, screenWidth)
-                                        : _crearRegister(
-                                            screenHeight, screenWidth),
-                                  )
-                                ],
+                                    )),
                               ),
                             ],
-                          )),
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -164,10 +192,9 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
       print('Inicio de sesión exitoso: ${userCredential.user?.uid}');
       final SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString('userIdM', userCredential.user!.uid);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => MobileHome()),
-      );
+      Navigator.pushReplacementNamed(context, 'mobile-home'
+          // MaterialPageRoute(builder: (context) => MobileHome()),
+          );
     } catch (e) {
       // Se ha producido un error durante el inicio de sesión.
       print('Error en el inicio de sesión: $e');
@@ -186,6 +213,8 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
         'apellido': _apellidoController.text.trim(),
         'correo': _emailController.text.trim(),
         'rol': docsIDs[0],
+        'autos': [],
+        'alertas':[],
       });
     } catch (e) {
       print('Error al registrar: $e');
@@ -207,7 +236,7 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
           height: height * 0.06,
         ),
         SizedBox(
-            width: width*0.9,
+            width: width * 0.9,
             height: height * 0.06,
             child: reusableTextField(
                 'Correo', Icons.email, false, _emailLController)),
@@ -215,7 +244,7 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
           height: 15.0,
         ),
         SizedBox(
-            width: width*0.9,
+            width: width * 0.9,
             height: height * 0.06,
             child: reusableTextField(
                 'Contraseña', Icons.lock, true, _passwordLController)),
@@ -223,10 +252,10 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
           height: 15.0,
         ),
         SizedBox(
-          height: height*0.07,
-          width: width*0.9,
+          height: height * 0.07,
+          width: width * 0.9,
           child: ElevatedButton(
-            child: Text('Iniciar'),
+            child: Text('Iniciar', style: TextStyle(color: AppColors.white),),
             style: ElevatedButton.styleFrom(
               shape: StadiumBorder(),
               backgroundColor: AppColors.primary,
@@ -251,68 +280,74 @@ class _LoginRegisterPageState extends State<LoginRegisterPage> {
   }
 
   Widget _crearRegister(double height, double width) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Text(
-          'Bienvenido a Park-iT Now',
-          style: TextStyle(
-            fontSize: 25,
-            color: AppColors.primary,
-          ),
-        ),
-        SizedBox(
-          height: height*0.015,
-        ),
-        SizedBox(
-            width: width*0.9,
-            height: height * 0.06,
-            child: reusableTextField(
-                'Nombre', Icons.person, false, _nombreController)),
-        SizedBox(
-          height: 10.0,
-        ),
-        SizedBox(
-          width: width*0.9,
-          height: height * 0.06,
-          child: reusableTextField(
-              'Apellido', Icons.text_fields, false, _apellidoController),
-        ),
-        SizedBox(
-          height: 10.0,
-        ),
-        SizedBox(
-            width: width*0.9,
-            height: height * 0.06,
-            child: reusableTextField(
-                'Correo', Icons.email, false, _emailController)),
-        SizedBox(
-          height: 10.0,
-        ),
-        SizedBox(
-            width: width*0.9,
-            height: height * 0.06,
-            child: reusableTextField(
-                'Contraseña', Icons.lock, true, _passwordController)),
-        SizedBox(
-          height: 10.0,
-        ),
-        SizedBox(
-          height: height*0.07,
-          width: width*0.9,
-          child: ElevatedButton(
-            child: Text('Registrarse'),
-            style: ElevatedButton.styleFrom(
-              shape: StadiumBorder(),
-              backgroundColor: AppColors.primary,
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            'Bienvenido a Park-iT Now',
+            style: TextStyle(
+              fontSize: 25,
+              color: AppColors.primary,
             ),
-            onPressed: () {
-              register();
-              print('Registrado');
-            },
           ),
-        ),
-      ],
+          SizedBox(
+            height: height * 0.015,
+          ),
+          SizedBox(
+              width: width * 0.9,
+              height: height * 0.06,
+              child: reusableTextField(
+                  'Nombre', Icons.person, false, _nombreController)),
+          SizedBox(
+            height: 10.0,
+          ),
+          SizedBox(
+            width: width * 0.9,
+            height: height * 0.06,
+            child: reusableTextField(
+                'Apellido', Icons.text_fields, false, _apellidoController),
+          ),
+          SizedBox(
+            height: 10.0,
+          ),
+          SizedBox(
+              width: width * 0.9,
+              height: height * 0.06,
+              child: reusableTextField(
+                  'Correo', Icons.email, false, _emailController)),
+          SizedBox(
+            height: 10.0,
+          ),
+          SizedBox(
+              width: width * 0.9,
+              height: height * 0.06,
+              child: reusableTextField(
+                  'Contraseña', Icons.lock, true, _passwordController)),
+          SizedBox(
+            height: 10.0,
+          ),
+          SizedBox(
+            height: height * 0.07,
+            width: width * 0.9,
+            child: ElevatedButton(
+              child: Text('Registrarse', style: TextStyle(color: AppColors.white),),
+              style: ElevatedButton.styleFrom(
+                shape: StadiumBorder(),
+                backgroundColor: AppColors.primary,
+              ),
+              onPressed: () {
+                register().then((e) {
+                  setState(() {
+                    showInputs = true;
+                  });
+                });
+                print('Registrado');
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

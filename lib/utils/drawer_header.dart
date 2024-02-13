@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:parkit_now/utils/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MyDrawerHeader extends StatefulWidget {
@@ -46,8 +47,10 @@ class _MyDrawerHeaderState extends State<MyDrawerHeader> {
   }
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return Container(
-      color: Colors.grey[300],
+      color: AppColors.primary,
       width: double.infinity,
       height:200,
       padding: EdgeInsets.only(top: 20.0),
@@ -55,7 +58,7 @@ class _MyDrawerHeaderState extends State<MyDrawerHeader> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            margin: EdgeInsets.only(bottom: 10),
+            margin: EdgeInsets.only(bottom: 10, top: 10),
             height: 70,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -67,17 +70,24 @@ class _MyDrawerHeaderState extends State<MyDrawerHeader> {
            if (userName != null)
             Text(
               userName!,
-              style: TextStyle(color: Colors.black, fontSize: 20),
+              style: TextStyle(color: Colors.white, fontSize: 20),
             )
           else
             CircularProgressIndicator(), // Muestra el CircularProgressIndicator mientras se carga la información
           if (userEmail != null)
             Text(
               userEmail!,
-              style: TextStyle(color: Colors.grey[700], fontSize: 14),
+              style: TextStyle(color: Colors.grey[300], fontSize: 14),
             )
           else
             SizedBox(), //
+          Container(
+            margin: EdgeInsets.only(top: screenHeight*0.02),
+            width: screenWidth*0.5,
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade300,)
+            ),
+          ),  
         ],
       ),
     );

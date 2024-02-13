@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:parkit_now/utils/colors.dart';
 import 'package:parkit_now/utils/drawer_header.dart';
 
 
@@ -14,9 +15,10 @@ class _NavBarState extends State<NavBar> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.grey.shade200,
+      backgroundColor: AppColors.primary,
       child: SingleChildScrollView(
         child: Container(
+          
           child: Column(
             children: [
               MyDrawerHeader(),
@@ -33,7 +35,7 @@ class _NavBarState extends State<NavBar> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
   return Container(
-    
+    color: AppColors.primary,
     padding: EdgeInsets.only(top: 15),
     child: Column(
       children: [
@@ -44,7 +46,7 @@ class _NavBarState extends State<NavBar> {
           currentPage == DrawerSections.misautos ? true : false, 'autos'
         ),
         menuItem(3, 'Ayuda y Soporte', Icons.help,
-          currentPage == DrawerSections.ayudaysoporte ? true : false, 'mobile-home'
+          currentPage == DrawerSections.ayudaysoporte ? true : false, 'ayuda'
         ),
         
         menuItem(4, 'Configuración', Icons.settings,
@@ -64,6 +66,7 @@ class _NavBarState extends State<NavBar> {
 Widget MyWebDrawerList(){
   var currentPage = DrawerSections.perfil;
   return Container(
+    
     
     padding: EdgeInsets.only(top: 15),
     child: Column(

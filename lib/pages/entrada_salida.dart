@@ -404,7 +404,7 @@ class _EntradaSalidaState extends State<EntradaSalida> {
                                   height: screenHeight * 0.05,
                                   child: Align(
                                       alignment: Alignment.center,
-                                      child: textInput("GW-KG-64",
+                                      child: textInput("GWKG64",
                                           _patenteIController, 2.0, false)),
                                 )
                               ]),
@@ -506,25 +506,49 @@ class _EntradaSalidaState extends State<EntradaSalida> {
                                       backgroundColor: Colors.green,
                                     ),
                                     onPressed: () async {
+                                      bool isReserva=false;
                                       if(_colorController.text != '' && _patenteIController.text != '' && _marcaController.text != ''){
-                                        if(total==disp){
+                                        if(disp>0){
+                                          CollectionReference estRef = FirebaseFirestore.instance.collection('estacionamientos');
+                                          DocumentSnapshot estDoc = await estRef.doc(uid).get();
+                                          int cuposDisponibles = estDoc['cupos_disponibles'];
+                                          cuposDisponibles--;
+                                          List<dynamic> referenciasA = estDoc['reservas'];
+                                          for( var referencias in referenciasA ){
+                                            DocumentReference reservaRef = referencias;
+
+                                            DocumentSnapshot reservaSnap = await reservaRef.get();
+                                            if(reservaSnap.exists){
+                                              Map<String, dynamic> datosReserva = reservaSnap.data() as Map<String, dynamic>;
+                                              print('\n ${datosReserva['patente']} --> ');
+
+
+                                              if(datosReserva['patente'] == _patenteIController.text){
+                                                print('Es igualllll');
+                                                isReserva = true;
+                                              }else{
+                                                print('No es igualllll');
+                                              }
+                                            
+
+                                            }
+                                          }
+
                                           CollectionReference autosCollection =
                                           FirebaseFirestore.instance
                                               .collection('autos');
                                       
                                           DocumentReference autoReference =
                                             await autosCollection.add({
-                                          'patente': _patenteIController.text,
+                                          'patente': _patenteIController.text.toUpperCase(),
                                           'marca': _marcaController.text,
                                           'color': _colorController.text,
                                           'hora_entrada': FieldValue.serverTimestamp(),
+                                          'isReserva': isReserva,
 
                                           });
                                           
-                                          CollectionReference estRef = FirebaseFirestore.instance.collection('estacionamientos');
-                                          DocumentSnapshot estDoc = await estRef.doc(uid).get();
-                                          int cuposDisponibles = estDoc['cupos_disponibles'];
-                                          cuposDisponibles--;
+                                          
                                           
                                             await estRef.doc(uid).update({
                                             'cupos_disponibles': cuposDisponibles,
