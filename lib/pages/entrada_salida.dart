@@ -31,6 +31,10 @@ class _EntradaSalidaState extends State<EntradaSalida> {
   String? uid;
   late int disp;
   late int total;
+  List<dynamic> autos=[];
+  double tarifa = 0;
+  double tarifaFinal= 0;
+  late Timestamp time;
 
   GetAutoData autoData = new GetAutoData();
 
@@ -73,8 +77,36 @@ class _EntradaSalidaState extends State<EntradaSalida> {
           final estData = estDoc.data() as Map<String, dynamic>;
           disp = estData['cupos_disponibles'];
           total = estData['cupos_totales'];
+          tarifa = estData['tarifa'][0];
+          autos= estData['autos'];
+          print(tarifa);
+          
         }
       }
+  }
+  Future<void> getAutoData(String patente) async{
+    
+    Timestamp timestamp2 = Timestamp.now();
+    for(var auto in autos){
+      print(auto.id);
+      DocumentReference autoRef = FirebaseFirestore.instance.collection('autos').doc(auto.id);
+      DocumentSnapshot autoSnap = await autoRef.get();
+      if(autoSnap.exists){
+        Map<String,dynamic> autoData = autoSnap.data() as Map<String,dynamic>;
+        if(autoData['patente']== patente){
+          time = autoData['hora_entrada'];
+
+          DateTime datetime1 = time.toDate();
+          DateTime datetime2 = timestamp2.toDate();
+
+          Duration difference = datetime2.difference(datetime1);
+          int differenceInHours=difference.inHours;
+          tarifaFinal= differenceInHours*60*tarifa;
+          print('${differenceInHours}: ${tarifaFinal}');
+        }
+        
+      }
+    }
   }
   @override
   void initState() {
@@ -640,38 +672,87 @@ class _EntradaSalidaState extends State<EntradaSalida> {
                                   height: screenHeight * 0.05,
                                   child: Align(
                                       alignment: Alignment.center,
-                                      child: textInput("GW-KG-64",
-                                          _patenteSController, 5.0, false)),
+                                      child: TextField(
+                                        controller: _patenteSController,
+                                        obscureText: false,
+                                        enableSuggestions: true,
+                                        autocorrect: false,
+                                        cursorColor: Colors.white,
+                                        style: TextStyle(color: AppColors.primary),
+                                        decoration: InputDecoration(
+                                          contentPadding:
+                                              EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                                          border: OutlineInputBorder(
+                                            borderRadius: BorderRadius.horizontal(
+                                                right: Radius.circular(25.0), left: Radius.circular(25.0)),
+                                          ),
+                                          hintText: 'GWKG64',
+                                          hintStyle: TextStyle(
+                                            fontSize: 20,
+                                          ),
+                                          filled: true,
+                                          floatingLabelBehavior: FloatingLabelBehavior.never,
+                                          fillColor: Colors.white.withOpacity(0.9),
+                                          alignLabelWithHint: true,
+                                        ),
+                                        keyboardType: TextInputType.text,
+                                        onEditingComplete: (){
+                                          getAutoData(_patenteSController.text);
+                                          setState(() {
+                                            
+                                          });
+                                        },
+                                        onSubmitted: (value){
+                                          getAutoData(_patenteSController.text);
+                                        }
+                                      )
+                                      // child: textInput("GW-KG-64",
+                                      //     _patenteSController, 5.0, false)
+                                        ),
                                 )
                               ]),
                             ),
                           ),
-                          Card(
-                            elevation: 0.0,
-                            child: Container(
-                              decoration:
-                                  BoxDecoration(color: Colors.grey[200]),
-                              child: Row(children: [
-                                Text("Hora Entrada: ",
-                                    style: TextStyle(
-                                      decoration: TextDecoration.none,
-                                      color: AppColors.primary,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                    )),
-                                SizedBox(
-                                  width: screenWidth * 0.0397,
+                          FutureBuilder(
+                            future: getAutoData(_patenteSController.text),
+                            builder: (context, snapshot) {
+                              
+                              if(snapshot.connectionState== ConnectionState.waiting){
+                                time = Timestamp.now();
+                                tarifaFinal=0;
+                              }else{
+                                if(tarifaFinal==0){
+                                  tarifaFinal =tarifa*60;
+                                }
+                              }
+                              return Card(
+                                elevation: 0.0,
+                                child: Container(
+                                  decoration:
+                                      BoxDecoration(color: Colors.grey[200]),
+                                  child: Row(children: [
+                                    Text("Hora Entrada: ",
+                                        style: TextStyle(
+                                          decoration: TextDecoration.none,
+                                          color: AppColors.primary,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                        )),
+                                    SizedBox(
+                                      width: screenWidth * 0.0397,
+                                    ),
+                                    Container(
+                                      width: screenWidth * 0.13,
+                                      height: screenHeight * 0.05,
+                                      child: Align(
+                                          alignment: Alignment.center,
+                                          child: textInput('${DateFormat('HH:mm').format(time.toDate())} ' ,
+                                              _horaESController, 5.0, false)),
+                                    )
+                                  ]),
                                 ),
-                                Container(
-                                  width: screenWidth * 0.13,
-                                  height: screenHeight * 0.05,
-                                  child: Align(
-                                      alignment: Alignment.center,
-                                      child: textInput('Hora ',
-                                          _horaESController, 5.0, false)),
-                                )
-                              ]),
-                            ),
+                              );
+                            }
                           ),
                           Card(
                             elevation: 0.0,
@@ -705,32 +786,37 @@ class _EntradaSalidaState extends State<EntradaSalida> {
                               ]),
                             ),
                           ),
-                          Card(
-                            elevation: 0.0,
-                            child: Container(
-                              decoration:
-                                  BoxDecoration(color: Colors.grey[200]),
-                              child: Row(children: [
-                                Text("Por pagar ",
-                                    style: TextStyle(
-                                      decoration: TextDecoration.none,
-                                      color: AppColors.primary,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.w600,
-                                    )),
-                                SizedBox(
-                                  width: 100,
+                          FutureBuilder(
+                            future: getAutoData(_patenteSController.text),
+                            builder: (context, snapshot) {                              
+                              return Card(
+                                elevation: 0.0,
+                                child: Container(
+                                  decoration:
+                                      BoxDecoration(color: Colors.grey[200]),
+                                  child: Row(children: [
+                                    Text("Por pagar ",
+                                        style: TextStyle(
+                                          decoration: TextDecoration.none,
+                                          color: AppColors.primary,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                        )),
+                                    SizedBox(
+                                      width: 100,
+                                    ),
+                                    Container(
+                                      width: screenWidth * 0.13,
+                                      height: screenHeight * 0.05,
+                                      child: Align(
+                                          alignment: Alignment.center,
+                                          child: textInput('$tarifaFinal', _pagarController,
+                                              5.0, false)),
+                                    )
+                                  ]),
                                 ),
-                                Container(
-                                  width: screenWidth * 0.13,
-                                  height: screenHeight * 0.05,
-                                  child: Align(
-                                      alignment: Alignment.center,
-                                      child: textInput('5400', _pagarController,
-                                          5.0, false)),
-                                )
-                              ]),
-                            ),
+                              );
+                            }
                           ),
                           Container(
                             padding: EdgeInsets.only(top: screenHeight * 0.04),
