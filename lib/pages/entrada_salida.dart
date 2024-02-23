@@ -602,8 +602,8 @@ class _EntradaSalidaState extends State<EntradaSalida> {
                     ),
                     Spacer(),
                     Container(
-                      width: 450,
-                      height: 350,
+                      width: screenWidth * 0.3,
+                      height: screenHeight * 0.47,
                       padding: EdgeInsets.only(left: 15, top: 20),
                       decoration: BoxDecoration(
                           border: Border.all(),

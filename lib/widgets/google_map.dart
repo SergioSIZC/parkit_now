@@ -18,6 +18,9 @@ import 'package:parkit_now/utils/colors.dart';
 import 'package:parkit_now/utils/globals.dart' as globals;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:currency_converter/currency.dart';
+import 'package:currency_converter/currency_converter.dart';
+
 class MapScreen extends StatefulWidget {
   @override
   _MapScreenState createState() => _MapScreenState();
@@ -30,6 +33,8 @@ class _MapScreenState extends State<MapScreen> {
       Completer<GoogleMapController>();
 
   String? uid;
+
+  ScrollController _scrollController = ScrollController();
 
   TextEditingController _horasController = new TextEditingController();
   static const LatLng _pGooglePlex = LatLng(37.4223, -122.0848);
@@ -234,16 +239,20 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<double> getUSD(double monto) async {
-    CurrencyRate rate = await LiveCurrencyRate.convertCurrency("USD", "CLP", 1);
-    double montoA = (monto / rate.result);
-    print('Monto $monto -> Rate ${rate.result} Convertidoooooooo: ${montoA}');
+    // CurrencyRate rate = await LiveCurrencyRate.convertCurrency("USD", "CLP", 2);
+    Currency myCurrency = await CurrencyConverter.getMyCurrency();
+    var usdConvert = await CurrencyConverter.convert(
+        from: Currency.clp, to: Currency.usd, amount: monto);
+
+    print('Monto $monto -> Rate ${usdConvert} ');
     setState(() {});
-    return montoA;
+    return usdConvert!;
   }
 
   String formatCurrency(double value) {
     // Utiliza NumberFormat para formatear el valor como moneda
     final formatter = NumberFormat.currency(locale: 'es_CL', symbol: '\$');
+
     return formatter.format(value);
   }
 
@@ -415,8 +424,21 @@ class _MapScreenState extends State<MapScreen> {
                 child: Column(
                   children: [
                     Text('Total a pagar: ${formatCurrency(totalAPagar)}'),
-                    Text(
-                        'Total a pagar en USD: ${montoConvertido!.toStringAsFixed(2)}'),
+                    FutureBuilder(
+                        future: getUSD(totalAPagar),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Container(
+                              height: screenHeight*0.02,
+                              width: screenHeight*0.02,
+                              child: CircularProgressIndicator( strokeWidth: 1.5,));
+                          }else{
+                            
+                            return Text(
+                              'Total a pagar en USD: ${montoConvertido!.toStringAsFixed(2)}',
+                            );
+                          }
+                        }),
                   ],
                 ),
               ),
@@ -425,7 +447,13 @@ class _MapScreenState extends State<MapScreen> {
                 child: Column(
                   children: [
                     if (serv.length != 0) Text('Servicios extra:'),
-                    Text(serviciosString),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      controller: _scrollController,
+                      child: Container(
+                          height: screenHeight * 0.02,
+                          child: Text(serviciosString)),
+                    ),
                   ],
                 ),
               ),

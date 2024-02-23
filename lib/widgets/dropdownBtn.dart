@@ -56,7 +56,7 @@ class _MyDropDownButtonState extends State<MyDropDownButton> {
       // Verificamos si el documento existe
       if (documentSnapshot.exists) {
         // Obtenemos el campo 'encargado' y lo almacenamos en la variable
-        encargado = documentSnapshot['encargado'];
+        encargado = documentSnapshot['encargados'][0];
         // Actualizamos el estado para que la interfaz de usuario refleje los cambios
         setState(() {});
       } else {

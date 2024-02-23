@@ -45,17 +45,7 @@ class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
     obtenerAutosEst(uid);
     
   }
-  Future<void> _getAutosFromFirebase() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('autos').get();
-
-    setState(() {
-      _autosList = querySnapshot.docs.map((DocumentSnapshot document) {
-        Map<String,dynamic> data = document.data() as Map<String, dynamic>;
-        data['id']=document.id;
-        return data;
-      }).toList();
-    });
-  }
+  
   Future<String?> getUsuario(DocumentReference ref) async{
     DocumentSnapshot userSnap = await ref.get();
 
@@ -73,7 +63,7 @@ class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
     
     _autosList =[];
     _reservasList =[];
-    _getAutosFromFirebase();
+    
     // _getReservasFromFirebase();
     hora = Stream.periodic(Duration(seconds: 1), (_) => DateTime.now());
     fecha = Stream.periodic(Duration(seconds: 1), (_) => DateTime.now());
@@ -348,7 +338,7 @@ class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
         
         if(autoSnap.exists){
           Map<String, dynamic> datosAuto = autoSnap.data() as Map<String, dynamic>;
-          _autosList[i] = datosAuto;
+          _autosList.add(datosAuto);
          
         }
       }

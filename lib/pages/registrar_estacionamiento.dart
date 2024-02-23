@@ -453,6 +453,7 @@ class _RegistroEstState extends State<RegistroEst> {
                           'horarios':[horario],
                           'tarifa':[tarifa, tarifa*60],
                           'contraseña': _contrasenaController.text.trim(),
+                          'telefono': '',
                           
                         }).then((value) {
                           _mostrarModalConfirmacion(context,"Estacionamiento Creado",Icons.task_alt, Colors.green);

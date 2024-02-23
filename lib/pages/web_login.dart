@@ -18,8 +18,17 @@ class _WebLoginState extends State<WebLogin> {
   TextEditingController _correoController = new TextEditingController();
   TextEditingController _contrasenaController = new TextEditingController();
   
-  
-
+  clearPrefs() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    clearPrefs();
+    
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -106,10 +115,10 @@ class _WebLoginState extends State<WebLogin> {
                                         fontWeight: FontWeight.w600,
                                       )),
                                   SizedBox(
-                                    width: screenWidth*0.039,
+                                    width: screenWidth*0.04,
                                   ),
                                   Container(
-                                    width: screenWidth*0.25,
+                                    width: screenWidth*0.2454,
                                     height: screenHeight*0.1,
                                     child: Align(
                                         alignment: Alignment.center,
@@ -131,10 +140,10 @@ class _WebLoginState extends State<WebLogin> {
                                         fontWeight: FontWeight.w600,
                                       )),
                                   SizedBox(
-                                    width: screenWidth*0.008,
+                                    width: screenWidth*0.013,
                                   ),
                                   Container(
-                                    width: screenWidth*0.25,
+                                    width: screenWidth*0.2454,
                                     height: screenHeight*0.1,
                                     child: Align(
                                         alignment: Alignment.center,

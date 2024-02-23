@@ -59,6 +59,7 @@ class _VerEstState extends State<VerEst> {
       horarios = estData['horarios'];
       tarifas= estData['tarifa'];
       servicios = estData['servicios'];
+      
       print(horarios);
     }else{
       print('No existe');
@@ -95,6 +96,9 @@ class _VerEstState extends State<VerEst> {
                   ),
                   Row(
                     children: [
+                      IconButton(onPressed: (){
+                        Navigator.pop(context);
+                      }, icon: Icon(Icons.arrow_back)),
                       Icon(
                         Icons.local_parking,
                         size: 90,
@@ -595,7 +599,7 @@ class _VerEstState extends State<VerEst> {
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment.center,
                                                             children: [
-                                                              Text('Servicio: $index',
+                                                              Text('Servicio: ',
                                                                   style: TextStyle(
                                                                     decoration:
                                                                         TextDecoration.none,
@@ -614,29 +618,26 @@ class _VerEstState extends State<VerEst> {
                                                                     ? screenWidth * 0.18
                                                                     : screenWidth * 0.25,
                                                                 height: screenHeight * 0.035,
-                                                                decoration: BoxDecoration(
-                                                                  border: Border.all(),
-                                                                  borderRadius:
-                                                                      BorderRadius.circular(25),
-                                                                ),
+                                                                
                                                                 child: Center(
                                                                   child: Text('${servicios[index]['nombre']}',
                                                                   style: TextStyle(
                                                                     decoration: TextDecoration.none,
-                                                                    color: Colors.grey[800],
+                                                                    color: Colors.grey[900],
                                                                     fontSize: 20,
-                                                                    fontWeight: FontWeight.w600,
+                                                                    fontWeight: FontWeight.w900,
                                                                   )),
                                                                 ),
                                                               )
                                                             ],
                                                           ),
                                                           SizedBox(
-                                                            height: screenHeight * 0.005,
+                                                            height: screenHeight * 0.006,
                                                           ),
                                                           Row(
                                                             mainAxisAlignment:
                                                                 MainAxisAlignment.center,
+                                                            crossAxisAlignment: CrossAxisAlignment.start,
                                                             children: [
                                                               Text('Descripción: ',
                                                                   style: TextStyle(
@@ -656,18 +657,16 @@ class _VerEstState extends State<VerEst> {
                                                                         1200
                                                                     ? screenWidth * 0.18
                                                                     : screenWidth * 0.25,
-                                                                height: screenHeight * 0.035,
-                                                                decoration: BoxDecoration(
-                                                                  border: Border.all(),
-                                                                  borderRadius:
-                                                                      BorderRadius.circular(25),
-                                                                ),
-                                                                child: Center(
+                                                                 height: screenHeight*0.07,
+                                                                
+                                                                child: SingleChildScrollView(
                                                                   child: Text('${servicios[index]['descripcion']}',
+                                                                    textAlign: TextAlign.justify,
                                                                     style: TextStyle(
                                                                       decoration: TextDecoration.none,
                                                                       color: Colors.grey[800],
                                                                       fontSize: 20,
+                                                                      
                                                                       fontWeight: FontWeight.w600,
                                                                     )),
                                                                 ),
