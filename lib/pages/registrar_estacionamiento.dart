@@ -26,7 +26,7 @@ class _RegistroEstState extends State<RegistroEst> {
   TextEditingController _nombreController = new TextEditingController();
   TextEditingController _direccionController = new TextEditingController();
   TextEditingController _tarifaController = new TextEditingController();
-  TextEditingController _longitudController = new TextEditingController();
+  TextEditingController _ppController = new TextEditingController();
   TextEditingController _cuposController = new TextEditingController();
   TextEditingController _horaAController = new TextEditingController();
   TextEditingController _correoController = new TextEditingController();
@@ -76,9 +76,13 @@ class _RegistroEstState extends State<RegistroEst> {
   }
 
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
     return Row(
       children: [
-        Flexible(flex: 2, child: SideLayout()),
+        (MediaQuery.of(context).size.width >= 1200)
+            ? Flexible(flex: 2, child: SideLayout())
+            : Container(),
         Spacer(),
         Expanded(
           flex: 8,
@@ -172,15 +176,11 @@ class _RegistroEstState extends State<RegistroEst> {
                 Container(
                   child: Column(
                     children: [
-                      Text('Nuevo Estacionamiento',style: TextStyle(
-                          decoration: TextDecoration.none,
-                          color: AppColors.primary,
-                          fontSize: 30,
-                        )),
+                      SizedBox(height: screenHeight*0.005,),
                       Card(
                             elevation: 0.0,
                             child: Container(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              
                               child: Row(children: [
                                 Text("Nombre del Estacionamiento: ", style: TextStyle(
                                       decoration: TextDecoration.none,
@@ -189,10 +189,10 @@ class _RegistroEstState extends State<RegistroEst> {
                                       fontWeight: FontWeight.w600,
                                     )),
                                 SizedBox(
-                                  width: 117,
+                                  width: screenWidth*0.05,
                                 ),
                                 Container(
-                                  width: 200,
+                                  width: screenWidth*0.4,
                                   height: 35,
                                   child: Align(
                                       alignment: Alignment.center,
@@ -204,7 +204,7 @@ class _RegistroEstState extends State<RegistroEst> {
                       Card(
                             elevation: 0.0,
                             child: Container(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              
                               child: Row(children: [
                                 Text("Dirección: ", style: TextStyle(
                                       decoration: TextDecoration.none,
@@ -213,10 +213,10 @@ class _RegistroEstState extends State<RegistroEst> {
                                       fontWeight: FontWeight.w600,
                                     )),
                                 SizedBox(
-                                  width: 117,
+                                  width: screenWidth*0.175,
                                 ),
                                 Container(
-                                  width: 200,
+                                  width: screenWidth*0.4,
                                   height: 35,
                                   child: Align(
                                       alignment: Alignment.center,
@@ -228,9 +228,33 @@ class _RegistroEstState extends State<RegistroEst> {
                       Card(
                             elevation: 0.0,
                             child: Container(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              
                               child: Row(children: [
                                 Text("Correo: ", style: TextStyle(
+                                      decoration: TextDecoration.none,
+                                      color: AppColors.primary,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w600,
+                                    )),
+                                SizedBox(
+                                  width: screenWidth*0.192,
+                                ),
+                                Container(
+                                  width: screenWidth*0.192,
+                                  height: 35,
+                                  child: Align(
+                                      alignment: Alignment.center,
+                                      child: textInput("Correo",_correoController, 2.0, false,false)),
+                                )
+                              ]),
+                            ),
+                          ),
+                      Card(
+                            elevation: 0.0,
+                            child: Container(
+                              
+                              child: Row(children: [
+                                Text("Correo de PayPal: ", style: TextStyle(
                                       decoration: TextDecoration.none,
                                       color: AppColors.primary,
                                       fontSize: 20,
@@ -244,7 +268,7 @@ class _RegistroEstState extends State<RegistroEst> {
                                   height: 35,
                                   child: Align(
                                       alignment: Alignment.center,
-                                      child: textInput("Correo",_correoController, 2.0, false,false)),
+                                      child: textInput("Correo de paypal",_ppController, 2.0, false,false)),
                                 )
                               ]),
                             ),
@@ -253,7 +277,7 @@ class _RegistroEstState extends State<RegistroEst> {
                       Card(
                             elevation: 0.0,
                             child: Container(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              
                               child: Row(children: [
                                 Text("Cupos Totales: ", style: TextStyle(
                                       decoration: TextDecoration.none,
@@ -279,7 +303,7 @@ class _RegistroEstState extends State<RegistroEst> {
                           Card(
                             elevation: 0.0,
                             child: Container(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              
                               child: Row(children: [
                                 Text("Hora de Apertura: ", style: TextStyle(
                                       decoration: TextDecoration.none,
@@ -308,7 +332,7 @@ class _RegistroEstState extends State<RegistroEst> {
                       Card(
                             elevation: 0.0,
                             child: Container(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              
                               child: Row(children: [
                                 Text("Hora de Cierre:", style: TextStyle(
                                       decoration: TextDecoration.none,
@@ -339,7 +363,7 @@ class _RegistroEstState extends State<RegistroEst> {
                       Card(
                             elevation: 0.0,
                             child: Container(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              
                               child: Row(children: [
                                 Text("Tarifa por minuto: ", style: TextStyle(
                                       decoration: TextDecoration.none,
@@ -363,7 +387,7 @@ class _RegistroEstState extends State<RegistroEst> {
                       Card(
                             elevation: 0.0,
                             child: Container(
-                              decoration: BoxDecoration(color: Colors.grey[200]),
+                              
                               child: Row(children: [
                                 Text("Contraseña: ", style: TextStyle(
                                       decoration: TextDecoration.none,
@@ -420,6 +444,8 @@ class _RegistroEstState extends State<RegistroEst> {
                           'correo': _correoController.text.trim(),
                           'ubicacion': [ubicacion],
                           'encargados':[],
+                          'servicios':[],
+                          'correoPP':_ppController.text.trim(),
                           'reservas':[],
                           'autos':[],
                           'cupos_totales': int.parse(_cuposController.text.trim()),
@@ -427,6 +453,7 @@ class _RegistroEstState extends State<RegistroEst> {
                           'horarios':[horario],
                           'tarifa':[tarifa, tarifa*60],
                           'contraseña': _contrasenaController.text.trim(),
+                          'telefono': '',
                           
                         }).then((value) {
                           _mostrarModalConfirmacion(context,"Estacionamiento Creado",Icons.task_alt, Colors.green);

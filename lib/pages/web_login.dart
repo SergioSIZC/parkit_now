@@ -18,8 +18,17 @@ class _WebLoginState extends State<WebLogin> {
   TextEditingController _correoController = new TextEditingController();
   TextEditingController _contrasenaController = new TextEditingController();
   
-  
-
+  clearPrefs() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+  }
+  @override
+  void initState() {
+    // TODO: implement initState
+    clearPrefs();
+    
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -77,7 +86,7 @@ class _WebLoginState extends State<WebLogin> {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                   child: Container(
-                    padding: EdgeInsets.symmetric(vertical: screenHeight*0.2, horizontal: screenWidth*0.064),
+                    padding: EdgeInsets.symmetric(vertical: screenHeight*0.17, horizontal: screenWidth*0.064),
                     decoration: BoxDecoration(
                       
                       borderRadius: BorderRadius.circular(25.0),
@@ -106,10 +115,10 @@ class _WebLoginState extends State<WebLogin> {
                                         fontWeight: FontWeight.w600,
                                       )),
                                   SizedBox(
-                                    width: screenWidth*0.039,
+                                    width: screenWidth*0.04,
                                   ),
                                   Container(
-                                    width: screenWidth*0.25,
+                                    width: screenWidth*0.2454,
                                     height: screenHeight*0.1,
                                     child: Align(
                                         alignment: Alignment.center,
@@ -131,10 +140,10 @@ class _WebLoginState extends State<WebLogin> {
                                         fontWeight: FontWeight.w600,
                                       )),
                                   SizedBox(
-                                    width: screenWidth*0.008,
+                                    width: screenWidth*0.013,
                                   ),
                                   Container(
-                                    width: screenWidth*0.25,
+                                    width: screenWidth*0.2454,
                                     height: screenHeight*0.1,
                                     child: Align(
                                         alignment: Alignment.center,
@@ -143,13 +152,42 @@ class _WebLoginState extends State<WebLogin> {
                                 ]),
                               ),
                             ),
-                            ElevatedButton(
-                              onPressed: (){
-                                signIn();
-                                print('correo: ${_correoController.text} Contraseña: ${_contrasenaController.text}');
-                            }, 
-                            child: Text('Iniciar')
-                          )
+                            Container(
+                              width: screenWidth*0.35,
+                              height: screenHeight*0.05,
+                              child: ElevatedButton(
+                                onPressed: (){
+                                  signIn();
+                                  print('correo: ${_correoController.text} Contraseña: ${_contrasenaController.text}');
+                              }, 
+                              child: Text('Iniciar Sesión', style: TextStyle(color: AppColors.white),),
+                                style: ElevatedButton.styleFrom(
+                                  shape: StadiumBorder(),
+                                  elevation: 1,
+                                  backgroundColor: AppColors.primary,       
+                                ),
+                                                        ),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text('¿Olvidó su contraseña?',style: TextStyle(
+                                        decoration: TextDecoration.none,
+                                        color: AppColors.white,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      )),
+                                TextButton(
+                                  child: Text('Recuperar', style: TextStyle(
+                                        decoration: TextDecoration.none,
+                                        color: AppColors.primary,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                      )),
+                                  onPressed: () {},
+                                )
+                              ],
+                            ),
                           ],
                         );
                       }

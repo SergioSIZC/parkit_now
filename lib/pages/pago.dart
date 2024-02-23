@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:mercadopago_sdk/mercadopago_sdk.dart';
+
 import 'package:parkit_now/utils/colors.dart';
 import 'package:parkit_now/utils/globals.dart' as globals;
 import 'package:flutter_paypal_checkout/flutter_paypal_checkout.dart';
@@ -17,33 +17,7 @@ class PagoPage extends StatefulWidget {
 
 
 class _PagoPageState extends State<PagoPage> {
-  Future<Map<String, dynamic>> crearPreferencia() async {
-    var mp = MP(globals.mpClientID, globals.mpClientSecret);
-    var preference = {
-        "items": [
-            {
-                "title": "Test",
-                "quantity": 1,
-                "currency_id": "USD",
-                "unit_price": 10.4
-            }
-        ]
-    };
-
-    var result = await mp.createPreference(preference);
-
-    return result;
-}
-  void ejecutarMP() async{
-    await crearPreferencia().then(
-      (result){
-        if(result!=null){
-          var preferenceID = result['response']['id'];
-          print(result);
-        }
-      }
-    );
-  }
+  
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -54,7 +28,7 @@ class _PagoPageState extends State<PagoPage> {
       ),
       body: Column(
         children: [
-          TextButton(onPressed: ejecutarMP, child: Text('Mercado Pago'))
+          
   
           // Center(
           //   child: TextButton(

@@ -1,9 +1,13 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:parkit_now/utils/colors.dart';
+import 'package:parkit_now/widgets/dropdownBtn.dart';
 import 'package:parkit_now/widgets/web_side_layout.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Report extends StatefulWidget {
   const Report({super.key});
@@ -13,6 +17,10 @@ class Report extends StatefulWidget {
 }
 
 class _ReportState extends State<Report> {
+  String? uid;
+  String? aid;
+  String? ama;
+  String? apa;
   late Stream<DateTime> fecha;
   late Stream<DateTime> hora;
   
@@ -21,26 +29,49 @@ class _ReportState extends State<Report> {
   TextEditingController _dateController = new TextEditingController();
   TextEditingController _descripcionController = new TextEditingController();
 
+  Future getUID() async{
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    final String? action = prefs.getString('userId');
+    final String? action2 = prefs.getString('id_automovilista');
+    final String? action3 = prefs.getString('marca');
+    final String? action4 = prefs.getString('patente');
+    print('UID: $action');
+    print('AID: $action2');
+    print('MARCA: $action3');
+    print('PATENTE: $action4');
+    uid = action;
+    aid = action2;
+    ama = action3;
+    apa = action4;
+    
+    
+  }
+  
   @override
   void initState() {
-
+    getUID();
     hora = Stream.periodic(Duration(seconds: 1), (_) => DateTime.now());
     fecha = Stream.periodic(Duration(seconds: 1), (_) => DateTime.now());
 
     super.initState();
   }
+  
 
   Widget build(BuildContext context) {
     final Map<String, dynamic>? parametros = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>?;
-
-  if (parametros != null && parametros.containsKey('marca')) {
-    _vehiculoController.text = parametros['vehiculo'].toString();
-    print(parametros);
-  } else {
-    print('Advertencia: Los parámetros son nulos o no contienen la clave "marca".');
-  }
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+    if (parametros != null && parametros.containsKey('marca')) {
+      _vehiculoController.text = parametros['vehiculo'].toString();
+      print(parametros);
+    } else {
+      print('Advertencia: Los parámetros son nulos o no contienen la clave "marca".');
+    }
+    
     return Row(children: [
-      Flexible(flex: 2, child: SideLayout()),
+      (MediaQuery.of(context).size.width >= 1200)
+            ? Flexible(flex: 2, child: SideLayout())
+            : Container(),
       Spacer(),
       Expanded(
           flex: 8,
@@ -60,24 +91,9 @@ class _ReportState extends State<Report> {
                   ),
                 ),
                 Expanded(child: Container()),
-                Column(
-                  children: [
-                    Text('Juan Pérez',
-                        style: TextStyle(
-                            decoration: TextDecoration.none,
-                            color: AppColors.primary,
-                            fontSize: 20)),
-                    Text('Encargado',
-                        style: TextStyle(
-                            decoration: TextDecoration.none,
-                            color: Colors.grey,
-                            fontSize: 15))
-                  ],
-                ),
-                Image(
-                  image: AssetImage('assets/images/user.png'),
-                  width: 50,
-                )
+                      Material(
+                              child: MyDropDownButton(),
+                            )
               ],
             ),
             SizedBox(
@@ -163,13 +179,36 @@ class _ReportState extends State<Report> {
                           width: 108,
                         ),
                         Container(
-                          width: 350,
-                          height: 35,
-                          child: Align(
-                              alignment: Alignment.center,
-                              child: textInput(
-                                  "Ford Fiesta", _vehiculoController, 5.0, false)),
-                        )
+                          width: MediaQuery.of(context).size.width >=
+                                  1200
+                              ? screenWidth*0.23
+                              : screenWidth * 0.25,
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          margin: EdgeInsets.symmetric(
+                              vertical: screenHeight * 0.008),
+                          child: Center(
+                            child: FutureBuilder(
+                              future: getUID(), 
+                              builder: (context, snapshot){
+                                return ama== null ? SizedBox(
+                                  child: CircularProgressIndicator(),
+                                  height: screenHeight*0.03,
+                                  width: screenHeight*0.03,
+                                ) :
+                                Text(ama.toString().toUpperCase(),
+                                style: TextStyle(
+                                  decoration: TextDecoration.none,
+                                  color: Colors.grey[800],
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ));
+                              }
+                            ),
+                          ),
+                        ),
                       ]),
                     ),
                     Card(
@@ -186,13 +225,36 @@ class _ReportState extends State<Report> {
                           width: 117,
                         ),
                         Container(
-                          width: 350,
-                          height: 35,
-                          child: Align(
-                              alignment: Alignment.center,
-                              child:
-                                  textInput("GW-KG-64", _patenteController, 5.0, false)),
-                        )
+                          width: MediaQuery.of(context).size.width >=
+                                  1200
+                              ? screenWidth*0.23
+                              : screenWidth * 0.25,
+                          decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          margin: EdgeInsets.symmetric(
+                              vertical: screenHeight * 0.008),
+                          child: Center(
+                            child: FutureBuilder(
+                              future: getUID(), 
+                              builder: (context, snapshot){
+                                return apa== null ? SizedBox(
+                                  child: CircularProgressIndicator(),
+                                  height: screenHeight*0.03,
+                                  width: screenWidth*0.23,
+                                ) :
+                                Text(apa.toString(),
+                                style: TextStyle(
+                                  decoration: TextDecoration.none,
+                                  color: Colors.grey[800],
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
+                                ));
+                              }
+                            ),
+                          ),
+                        ),
                       ]),
                     ),
                     Card(
@@ -209,7 +271,7 @@ class _ReportState extends State<Report> {
                           width: 10,
                         ),
                         Container(
-                          width: 350,
+                          width: screenWidth*0.23,
                           height: 35,
                           child: Align(
                               alignment: Alignment.center,
@@ -220,7 +282,10 @@ class _ReportState extends State<Report> {
                     ),
                     Card(
                       elevation: 0.0,
-                      child: Row(children: [
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                         Text("Descripción:",
                             style: TextStyle(
                               decoration: TextDecoration.none,
@@ -232,12 +297,34 @@ class _ReportState extends State<Report> {
                           width: 81,
                         ),
                         Container(
-                          width: 350,
-                          height: 130,
-                          child: Align(
-                              alignment: Alignment.center,
-                              child: textInput("Descripción del daño ocurrido...",
-                                  _descripcionController, 50.0, false)),
+                          width: screenWidth*0.23,
+                          margin: EdgeInsets.symmetric(vertical: screenHeight*0.03),
+                          child: TextField(
+                          
+                          controller: _descripcionController,
+                          obscureText: false,
+                          enableSuggestions: true,
+                          autocorrect: false,
+                          maxLines: 3,
+                          cursorColor: AppColors.primary,
+                          style: TextStyle(color: AppColors.primary),
+                          decoration: InputDecoration(
+                            
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.horizontal(
+                                  right: Radius.circular(25.0), left: Radius.circular(25.0)),
+                            ),
+                            hintText: 'Descripción de lo ocurrido...',
+                            hintStyle: TextStyle(
+                              fontSize: 20,
+                            ),
+                            filled: true,
+                            floatingLabelBehavior: FloatingLabelBehavior.never,
+                            fillColor: Colors.white.withOpacity(0.9),
+                            alignLabelWithHint: true,
+                          ),
+                          keyboardType: TextInputType.text,
+                          )
                         )
                       ]),
                     ),
@@ -246,13 +333,15 @@ class _ReportState extends State<Report> {
                         SizedBox(
                           width: 160,
                           child: ElevatedButton(
-                            onPressed: (){
+                            onPressed: () async {
+                              
                               _mostrarModalConfirmacion(context);
                             }, 
-                            child: Text("Reportar daños"),
+                            child: Text("Reportar daños", style: TextStyle(color: AppColors.white),),
                             style: ElevatedButton.styleFrom(
                               shape: StadiumBorder(),
                               backgroundColor: Colors.green,
+                              
                             ),
                           ),
                         ),
@@ -260,8 +349,10 @@ class _ReportState extends State<Report> {
                         SizedBox(
                           width: 160,
                           child: ElevatedButton(
-                            onPressed: (){}, 
-                            child: Text("Cancelar"),
+                            onPressed: (){
+                              Navigator.pushNamed(context, 'listado-reserva-vehiculo');
+                            }, 
+                            child: Text("Cancelar", style: TextStyle(color: AppColors.white),),
                             style: ElevatedButton.styleFrom(
                               shape: StadiumBorder(),
                               backgroundColor: Colors.red,
@@ -286,7 +377,7 @@ class _ReportState extends State<Report> {
         return AlertDialog(
           icon: Icon(Icons.warning, size: 50,color: Colors.amber,),
           title: Text("¿Estás seguro de que quieres reportar daños?"),
-          content: Text("Patente: XX-XX-XX"),
+          content: Text("Patente: $apa"),
           actions: <Widget>[
             ElevatedButton(
               child: Text("Aceptar"),
@@ -294,9 +385,34 @@ class _ReportState extends State<Report> {
                 shape: StadiumBorder(),
                 backgroundColor: Colors.green,
               ),
-              onPressed: () {
-                // Realizar la acción de reportar daños
-                // ... tu lógica aquí ...
+              onPressed: () async{
+                DocumentReference userRef = FirebaseFirestore.instance.collection('usuarios').doc(aid);
+                DocumentSnapshot userSnap = await userRef.get();
+                if(userSnap.exists){
+                  
+                  final fechaFormateada =
+                      DateFormat('dd/MM/yyyy').format(DateTime.now());
+                  final horaFormateada =
+                      DateFormat('HH:mm:ss').format(DateTime.now());
+                  var alertas = {
+                    'patente': apa.toString(),
+                    'marca': ama.toString(),
+                    'id_estacionamiento': uid,
+                    'descripción':_descripcionController.text,
+                    'fecha': fechaFormateada,
+                    'hora': horaFormateada,
+                  };
+                  userRef.update({
+                    'alertas': FieldValue.arrayUnion([alertas]),
+                  });
+                  print('alertas: ${userSnap['alertas']}');
+                }else{
+                  print('Usuario no existe');
+                }
+                _descripcionController.text='';
+                setState(() {
+                  
+                });
                 Navigator.of(context).pop(); // Cerrar el cuadro de diálogo
               },
             ),
@@ -318,17 +434,19 @@ class _ReportState extends State<Report> {
   }
   Widget textInput(
       String texto, TextEditingController controller, double vAlignment, bool setEditable) {
+        double screenHeight = MediaQuery.of(context).size.height;
+        double screenWidth = MediaQuery.of(context).size.width;
     return TextField(
       readOnly: setEditable,
       controller: controller,
       obscureText: false,
       enableSuggestions: true,
       autocorrect: false,
-      cursorColor: Colors.white,
+      maxLines: null,
+      cursorColor: AppColors.primary,
       style: TextStyle(color: AppColors.primary),
       decoration: InputDecoration(
-        contentPadding:
-            EdgeInsets.symmetric(vertical: vAlignment, horizontal: 10.0),
+        contentPadding: EdgeInsets.symmetric(vertical: vAlignment,horizontal: 10.0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.horizontal(
               right: Radius.circular(25.0), left: Radius.circular(25.0)),

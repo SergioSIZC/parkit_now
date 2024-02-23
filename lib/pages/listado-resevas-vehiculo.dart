@@ -8,6 +8,7 @@ import 'package:parkit_now/data/get_user_data.dart';
 import 'package:parkit_now/data/vehiculos.dart';
 import 'package:parkit_now/modelos/vehiculo.dart';
 import 'package:parkit_now/utils/colors.dart';
+import 'package:parkit_now/widgets/dropdownBtn.dart';
 import 'package:parkit_now/widgets/web_side_layout.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,6 +22,7 @@ class ListadoReservaVehiculo extends StatefulWidget {
 class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
   late Stream<DateTime> fecha;
   late Stream<DateTime> hora;
+  bool isReserva = false;
 
   String? uid;
   bool reg_button = true;
@@ -31,55 +33,50 @@ class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
   Color? buttonColor2 = AppColors.primary;
   late List<Map<String, dynamic>> _autosList;
   late List<Map<String, dynamic>> _reservasList;
+  late List<String> _reservasId = [];
+
 
   Future getUID() async{
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? action = prefs.getString('userId');
     print(action);
     uid = action;
+    obtenerReservasEst(uid);
+    obtenerAutosEst(uid);
     
   }
-  Future<void> _getAutosFromFirebase() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('autos').get();
+  
+  Future<String?> getUsuario(DocumentReference ref) async{
+    DocumentSnapshot userSnap = await ref.get();
 
-    setState(() {
-      _autosList = querySnapshot.docs.map((DocumentSnapshot document) {
-        Map<String,dynamic> data = document.data() as Map<String, dynamic>;
-        data['id']=document.id;
-        return data;
-      }).toList();
-    });
-  }
-  Future<void> _getReservasFromFirebase() async {
-    QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection('reservas').get();
-    setState(() {
-      _reservasList = querySnapshot.docs.map((DocumentSnapshot document) {
-        Map<String,dynamic> data = document.data() as Map<String, dynamic>;
-        CollectionReference users = FirebaseFirestore.instance.collection('usuarios');
-
-        DocumentReference userRef = data['usuario'];
-        data['id']=document.id;
-        data['usuario']= userRef.id;
-        print(userRef.id);
-        return data;
-      }).toList();
-    });
-  }
-  Future getAutos() async{
-
+    if(userSnap.exists){
+      String? nombre = userSnap['nombre'];
+      String? apellido = userSnap['apellido'];
+      return '$nombre $apellido';
+    }else{
+      return null;
+    }
   }
   @override
   void initState() {
     getUID();
+    
     _autosList =[];
     _reservasList =[];
-    _getAutosFromFirebase();
-    _getReservasFromFirebase();
+    
+    // _getReservasFromFirebase();
     hora = Stream.periodic(Duration(seconds: 1), (_) => DateTime.now());
     fecha = Stream.periodic(Duration(seconds: 1), (_) => DateTime.now());
 
     super.initState();
     this.vehiculos = List.of(allVehicles);
+    print('Prueba');
+    for(var auto in _autosList){
+      print(auto);
+    }
+    setState(() {
+      
+    });
   }
   
   
@@ -88,7 +85,9 @@ class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Flexible(flex: 2, child: SideLayout()),
+        (MediaQuery.of(context).size.width >= 1200)
+            ? Flexible(flex: 2, child: SideLayout())
+            : Container(),
         Spacer(),
         Expanded(
             flex: 8,
@@ -109,24 +108,9 @@ class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
                         ),
                       ),
                       Expanded(child: Container()),
-                      Column(
-                        children: [
-                          Text('Juan Pérez',
-                              style: TextStyle(
-                                  decoration: TextDecoration.none,
-                                  color: AppColors.primary,
-                                  fontSize: 20)),
-                          Text('Encargado',
-                              style: TextStyle(
-                                  decoration: TextDecoration.none,
-                                  color: Colors.grey,
-                                  fontSize: 15))
-                        ],
-                      ),
-                      Image(
-                        image: AssetImage('assets/images/user.png'),
-                        width: 50,
-                      )
+                      Material(
+                              child: MyDropDownButton(),
+                            )
                     ],
                   ),
                   SizedBox(height: 30,),
@@ -245,28 +229,33 @@ class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
     );
   }
   Widget _tablaRegistroReservas(){
-    final columns = ['ID', 'Usuario', 'Hora Inicio', 'Tarifa','Estado', 'Opciones'];
+    final columns = ['Patente', 'Usuario', 'Hora Inicio', 'Tarifa','Estado', 'Opciones'];
 
     return DataTable(
       columns: getColumns(columns),
-      rows: _reservasList.map((Map<String, dynamic> data) {
+      rows: _reservasList.map((_reservasList) {
+        print(getUsuario(_reservasList['usuario']));
   
-        Timestamp t = data['hora'];
+        Timestamp t = _reservasList['hora'];
         DateTime d = t.toDate();
             return DataRow(
               cells: <DataCell>[
                 DataCell(
-                  Text(data['id'].toString()),
+                  Text(_reservasList['patente'].toString()),
                 ),
                 DataCell(
-                  GetUserData(documentId: data['usuario']).getUserName(data['usuario']),
+                  FutureBuilder(future: getUsuario(_reservasList['usuario']), 
+                  builder: (context,snapshot){
+                    String? nombre = snapshot.data;
+                    return Text(nombre.toString());
+                  }),
                   
                 ),
                 DataCell(
                   Text(DateFormat('HH:mm').format(d)),
                 ),
                 DataCell(
-                  Text(data['tarifa'].toString()),
+                  Text('\$ ${formatCurrency(_reservasList['tarifaCLP'])}'),
                 ),
                 DataCell(
                   Text('En Curso'),
@@ -287,29 +276,134 @@ class _ListadoReservaVehiculoState extends State<ListadoReservaVehiculo> {
       sortAscending: isAscending,
     );
   }
+  void obtenerReservasEst(String? uid) async{
+    DocumentReference estRef = FirebaseFirestore.instance.collection('estacionamientos').doc(uid);
+    DocumentSnapshot estSnapshot = await estRef.get();
+    if(estSnapshot.exists){
+      List<dynamic> referenciasA = estSnapshot['reservas'];
+      print('Referencias a la collecion reservas: ');
+      for( var referencias in referenciasA ){
+        DocumentReference reservaRef = referencias;
+
+        DocumentSnapshot reservaSnap = await reservaRef.get();
+        if(reservaSnap.exists){
+          Map<String, dynamic> datosReserva = reservaSnap.data() as Map<String, dynamic>;
+          _reservasList.add(datosReserva);
+        
+
+        }
+      }
+      obtenerReservasId(uid);
+    }else {
+      print('El estacionamiento con el UID especificado no existe.');
+    }
+  }
+  void obtenerReservasId(String? uid) async{
+    DocumentReference estRef = FirebaseFirestore.instance.collection('estacionamientos').doc(uid);
+    DocumentSnapshot estSnapshot = await estRef.get();
+    if(estSnapshot.exists){
+      List<dynamic> referenciasA = estSnapshot['reservas'];
+      print('Referencias a la collecion reservas: ');
+      for( var referencias in referenciasA ){
+        DocumentReference reservaRef = referencias;
+
+        DocumentSnapshot reservaSnap = await reservaRef.get();
+        if(reservaSnap.exists){
+          
+          _reservasId.add(reservaSnap.id);
+        
+
+        }
+      }
+      for(var auto in _reservasId){
+        print('ID reserva:  $auto');
+      }
+    }else {
+      print('El estacionamiento con el UID especificado no existe.');
+    }
+  }
+   void obtenerAutosEst(String? uid) async{
+    _autosList.clear();
+    print('Longitud de _autosList después de la operación: ${_autosList.length}');
+    DocumentReference estRef = FirebaseFirestore.instance.collection('estacionamientos').doc(uid);
+    DocumentSnapshot estSnapshot = await estRef.get();
+    if(estSnapshot.exists){
+      List<dynamic> referenciasA = estSnapshot['autos'];
+      print('Referencias a la collecion Autos: ');
+      print('Longitud de _autosList después de la operación: ${_autosList.length}');
+      for( var i = 0; i <referenciasA.length; i++ ){
+        DocumentReference autoRef = referenciasA[i];
+
+        DocumentSnapshot autoSnap = await autoRef.get();
+        
+        if(autoSnap.exists){
+          Map<String, dynamic> datosAuto = autoSnap.data() as Map<String, dynamic>;
+          _autosList.add(datosAuto);
+         
+        }
+      }
+      print('Longitud de _autosList después de la operación: ${_autosList.length}');
+      print('Prueba');
+      for(var auto in _autosList){
+        print(auto);
+      }
+    }else {
+      print('El estacionamiento con el UID especificado no existe.');
+    }
+  }
+  String formatCurrency(double value) {
+    // Utiliza NumberFormat para formatear el valor como moneda
+    final formatter = NumberFormat.currency(locale: 'es_CL', symbol: '\$');
+    return formatter.format(value);
+  }
   Widget _tablaRegistroVehiculos(){
-    final columns = ['ID','Vehículo', 'Patente', 'Hora Inicio', 'Opciones'];
+    final columns = ['Marca', 'Color', 'Patente', 'Hora Inicio', '¿Es reserva?', 'Opciones'];
 
     return DataTable(
       columns: getColumns(columns),
-      rows: _autosList.map((Map<String, dynamic> data) {
-        Timestamp t = data['hora_entrada'];
+      rows: _autosList.map((Map<String, dynamic> _autosList) {
+        Timestamp t = _autosList['hora_entrada'];
         DateTime d = t.toDate();
             return DataRow(
               cells: <DataCell>[
+                
                 DataCell(
-                  Text(data['id'].toString()),
+                  Text(_autosList['marca'].toString().toUpperCase()),
                 ),
                 DataCell(
-                  Text(data['marca'].toString()),
+                  Text(_autosList['color'].toString()),
                 ),
                 DataCell(
-                  Text(data['patente'].toString()),
+                  Text(_autosList['patente'].toString()),
                 ),
                 DataCell(
                   Text(DateFormat('HH:mm').format(d)),
                 ),
-                DataCell(Center(child: IconButton(onPressed: (){Navigator.pushNamed(context, 'report');}, icon: Icon(Icons.report)))),
+                DataCell(
+                  _autosList['isReserva']==true ? Text('Si') : Text('No'),
+                ),
+                DataCell(
+                  _autosList['isReserva'] ? Center(
+                    child: IconButton(onPressed: () async{
+                      DocumentReference usuario;
+                      for( var i = 0; i < _reservasList.length; i++ ){
+                        
+                        if(_reservasList[i]['patente'] == _autosList['patente']){
+                          usuario = _reservasList[i]['usuario'];
+                          print(usuario.id);
+                          SharedPreferences pref = await SharedPreferences.getInstance();
+                          pref.setString('id_automovilista', usuario.id);
+                          pref.setString('marca', _autosList['marca']);
+                          pref.setString('patente', _autosList['patente']);
+                          
+                        }
+                      }
+                      
+                      Navigator.pushNamed(context, 'report');
+                    }, icon: Icon(Icons.report)
+                  )
+                  ): Container(),
+                ),
               ],
             );
           }).toList(),

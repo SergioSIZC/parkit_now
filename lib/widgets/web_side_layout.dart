@@ -122,24 +122,19 @@ class _SideLayoutState extends State<SideLayout> {
               'Mi Cuenta',
               Icons.person_outline,
               currentPage == DrawerSections.micuenta ? true : false,
-              'registrar-est'),
+              'mi-cuenta'),
           menuItem(
               3,
               'Estacionamiento',
               Icons.near_me_outlined,
               currentPage == DrawerSections.estacionamiento ? true : false,
               'mi-est'),
-          menuItem(
-              4,
-              'Ajustes',
-              Icons.settings_outlined,
-              currentPage == DrawerSections.configuracion ? true : false,
-              'listado-reserva-vehiculo'),
+          
           SizedBox(
             height: height * 0.2,
           ),
           menuItem(
-              5,
+              4,
               'Cerrar Sesión',
               Icons.logout_rounded,
               currentPage == DrawerSections.configuracion ? true : false,

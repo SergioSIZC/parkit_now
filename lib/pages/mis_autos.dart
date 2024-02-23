@@ -92,17 +92,24 @@ class _MisAutosState extends State<MisAutos> {
               },
             ),
           ),
-          if (tieneAutos)
-            ElevatedButton(
-              onPressed: () {
-                // Navegar a la pantalla de añadir autos
-                // Puedes usar Navigator para llevar al usuario a otra pantalla.
-                // Navigator.push(context, MaterialPageRoute(builder: (context) => AgregarAutoPage()));
-                _mostrarModal(context);
-              },
-              child: Text('Añadir Autos'),
-            ),
+          
+         
         ],
+      ),
+      floatingActionButton: Container(
+        height: screenHeight*0.06,
+        width: screenWidth*0.4,
+        child: FloatingActionButton(
+          onPressed: () {
+            // Navegar a la pantalla de añadir autos
+            // Puedes usar Navigator para llevar al usuario a otra pantalla.
+            // Navigator.push(context, MaterialPageRoute(builder: (context) => AgregarAutoPage()));
+            _mostrarModal(context);
+          },
+          child: Text('Añadir Autos'),
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.white,
+        ),
       ),
     );
   }
@@ -110,85 +117,97 @@ class _MisAutosState extends State<MisAutos> {
   Future<void> _mostrarModal(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+    // Obtener la altura del teclado virtual
+    double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
     return showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
-        return Container(
-          width: screenWidth * 0.9,
-          decoration: BoxDecoration(
-              color: AppColors.white, borderRadius: BorderRadius.circular(25)),
-          padding: EdgeInsets.all(16),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Añadir un nuevo auto',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Container(
-                  width: screenWidth * 1,
-                  margin: EdgeInsets.symmetric(
-                      vertical: screenHeight * 0.01,
-                      horizontal: screenWidth * 0.01),
-                  child: Material(
-                      child: TextField(
-                    controller: _patentesController,
-                    decoration:
-                        InputDecoration(labelText: 'Ingrese una patente'),
-                  )),
-                ),
-                Row(
+        return SingleChildScrollView(
+          child: Container(
+            width: screenWidth * 0.9,
+            height: screenHeight - keyboardHeight,
+            decoration: BoxDecoration(
+                color: AppColors.white, borderRadius: BorderRadius.circular(25)),
+            padding: EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Spacer(),
-                    ElevatedButton(
-                      child: Text("Crear"),
-                      style: ElevatedButton.styleFrom(
-                        shape: StadiumBorder(),
-                        backgroundColor: Colors.green,
+                    Text(
+                      'Añadir un nuevo auto',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
-                      onPressed: () async {
-                        Map<String, dynamic> auto = {
-                          'patente': _patentesController.text
-                        };
-
-                        await FirebaseFirestore.instance
-                            .collection('usuarios')
-                            .doc(uid)
-                            .update({
-                          'autos': FieldValue.arrayUnion([auto]),
-                        });
-                        setState(() {
-                          obtenerPatentes();
-                        });
-
-                        Navigator.of(context)
-                            .pop(); // Cerrar el cuadro de diálogo
-                      },
                     ),
-                    Spacer(),
-                    ElevatedButton(
-                      child: Text("Borrar"),
-                      style: ElevatedButton.styleFrom(
-                        shape: StadiumBorder(),
-                        backgroundColor: Colors.red,
-                      ),
-                      onPressed: () {
-                        // Realizar la acción de reportar daños
-                        // ... tu lógica aquí ...
-                        Navigator.of(context)
-                            .pop(); // Cerrar el cuadro de diálogo
-                      },
+                    SizedBox(height: 8),
+                    Container(
+                      width: screenWidth * 1,
+                      margin: EdgeInsets.symmetric(
+                          vertical: screenHeight * 0.01,
+                          horizontal: screenWidth * 0.01),
+                      child: Material(
+                          child: TextField(
+                        controller: _patentesController,
+                        decoration:
+                            InputDecoration(labelText: 'Ingrese una patente'),
+                      )),
                     ),
-                    Spacer(),
-                  ],
-                ),
-              ]),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Spacer(),
+                        ElevatedButton(
+                          child: Text("Crear"),
+                          style: ElevatedButton.styleFrom(
+                            shape: StadiumBorder(),
+                            backgroundColor: Colors.green,
+                          ),
+                          onPressed: () async {
+                            Map<String, dynamic> auto = {
+                              'patente': _patentesController.text.toUpperCase(),
+                            };
+              
+                            await FirebaseFirestore.instance
+                                .collection('usuarios')
+                                .doc(uid)
+                                .update({
+                              'autos': FieldValue.arrayUnion([auto]),
+                            });
+                            setState(() {
+                              obtenerPatentes();
+                              _patentesController.text = '';
+                            });
+              
+                            Navigator.of(context)
+                                .pop(); // Cerrar el cuadro de diálogo
+                          },
+                        ),
+                        Spacer(),
+                        ElevatedButton(
+                          child: Text("Borrar"),
+                          style: ElevatedButton.styleFrom(
+                            shape: StadiumBorder(),
+                            backgroundColor: Colors.red,
+                          ),
+                          onPressed: () {
+                            // Realizar la acción de reportar daños
+                            // ... tu lógica aquí ...
+                            setState(() {
+                              
+                              _patentesController.text = '';
+                            });
+                            Navigator.of(context)
+                                .pop(); // Cerrar el cuadro de diálogo
+                          },
+                        ),
+                        Spacer(),
+                      ],
+                    ),
+                  ]),
+            ),
+          ),
         );
       },
     );

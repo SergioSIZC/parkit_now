@@ -1,34 +1,78 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:parkit_now/data/get_estacionamiento_data.dart';
 import 'package:parkit_now/utils/navbar.dart';
 import 'package:parkit_now/widgets/google_map.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MobileHome extends StatefulWidget {
-  const MobileHome({super.key});
+  const MobileHome({
+    super.key,
+  });
 
   @override
   State<MobileHome> createState() => _MobileHomeState();
 }
+
 class _MobileHomeState extends State<MobileHome> {
-  
   String? uid;
+  List<dynamic> alertas = [];
   var currentPage = DrawerSections.perfil;
-  Future getUID() async{
+  String texto = 'Aviso de Cierre';
+  late BannerAd bannerAd;
+  bool isAdLoaded = false;
+  var adUnit = "ca-app-pub-3940256099942544/6300978111";
+
+  initBannerAd() {
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: adUnit,
+      listener: BannerAdListener(onAdLoaded: (ad) {
+        debugPrint('$ad loaded.');
+        setState(() {
+          isAdLoaded = true;
+        });
+      }, onAdFailedToLoad: (ad, error) {
+        debugPrint('BannerAd failed to load: $error');
+        // Dispose the ad here to free resources.
+        ad.dispose();
+      }),
+      request: AdRequest(),
+    )..load();
+  }
+
+  Future getUID() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     final String? action = prefs.getString('userIdM');
     print(action);
     uid = action;
     print('UID: ${uid}');
+    obtenerAlertas();
+  }
+  Future obtenerAlertas() async{
+    DocumentReference userRef = FirebaseFirestore.instance.collection('usuarios').doc(uid);
+    DocumentSnapshot userSnap = await userRef.get();
+    if(userSnap.exists){
+      Map<String,dynamic> userData = userSnap.data() as Map<String,dynamic>;
+
+      alertas = userData['alertas'];
+      print('Existeeee ${alertas.length}');
+    }else{
+      print('no existeee $userRef');
+    }
   }
   @override
   void initState() {
     getUID();
+    
+    initBannerAd();
     setState(() {
       super.initState();
     });
   }
+
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
@@ -37,11 +81,11 @@ class _MobileHomeState extends State<MobileHome> {
         backgroundColor: Colors.transparent,
         shadowColor: Colors.transparent,
         leading: Builder(
-          builder: (context){
+          builder: (context) {
             return IconButton(
               icon: Icon(Icons.person),
               color: Colors.white,
-              onPressed: (){
+              onPressed: () {
                 Scaffold.of(context).openDrawer();
               },
             );
@@ -49,12 +93,13 @@ class _MobileHomeState extends State<MobileHome> {
         ),
         actions: <Widget>[
           Builder(
-            builder: (context){
+            builder: (context) {
               return IconButton(
                 icon: Icon(Icons.notifications),
                 color: Colors.white,
-                onPressed: (){
+                onPressed: () {
                   Scaffold.of(context).openEndDrawer();
+                  setState(() {});
                 },
               );
             },
@@ -63,17 +108,88 @@ class _MobileHomeState extends State<MobileHome> {
       ),
       drawer: NavBar(),
       endDrawer: Drawer(
-        child: Container(
-          color: Colors.grey[200],
-          child: Center(
-            child: Text(
-              "Notifications",
+        child: Column(
+          children: [
+            Container(
+              margin: EdgeInsets.symmetric(vertical: screenHeight*0.05),
+              child: Text('Notificaciones',
               style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 30
-              ),
+                decoration: TextDecoration.none,
+                color: Colors.grey[800],
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+              )),
             ),
-          ),
+            Container(
+              height: screenHeight*0.85,
+              child: FutureBuilder(
+                future: obtenerAlertas(),
+                builder: (context, snapshot){
+                  return alertas.length>0 ? ListView.builder(
+                    itemCount: alertas.length,
+                    itemBuilder: (context, index){
+                      return Container(
+                        height: screenHeight * 0.15,
+                        margin: EdgeInsets.all(screenWidth * 0.05),
+                        decoration: BoxDecoration(
+                            border: Border.all(),
+                            borderRadius: BorderRadius.circular(25.0)),
+                        child: Column(
+                          children: [
+                            Container(
+                              margin: EdgeInsets.symmetric(horizontal: screenWidth * 0.015),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.notifications, color: Colors.red.shade700,),
+                                  Text('Aviso de emergencia', style: TextStyle(color: Colors.red.shade700),),
+                                  Spacer(),
+                                  IconButton(onPressed: () async{
+                                    DocumentReference userRef = FirebaseFirestore.instance.collection('usuarios').doc(uid);
+                                    DocumentSnapshot userSnapshot = await userRef.get();
+                                    if (userSnapshot.exists){
+                                      userRef.update({
+                                        'alertas': FieldValue.arrayRemove([alertas[index]]),
+                                      }).then((value) => print('Listo'));
+
+                                    }
+                                    setState(() {
+                                      
+                                    });
+                                  }, icon: Icon(Icons.close), style: IconButton.styleFrom(iconSize: 15),)
+                                ],
+                              )),
+                            Container(
+                              margin: EdgeInsets.all(screenWidth * 0.015),
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(alertas[index]['fecha']),
+                                        Text(alertas[index]['hora']),
+                                      ],
+                                    ),
+                                    Text(
+                                        alertas[index]['descripción']),
+                                  ],
+                                )),
+                          ],
+                        ));
+                    }
+                  ):
+                  Container(child: Center(child: Text('No hay alertas',
+                  style: TextStyle(
+                    decoration: TextDecoration.none,
+                    color: Colors.grey[800],
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  )),));
+                  
+                },
+              ),
+            
+            )
+          ],
         ),
       ),
       resizeToAvoidBottomInset: false,
@@ -90,15 +206,13 @@ class _MobileHomeState extends State<MobileHome> {
                 child: Column(
                   children: [
                     SizedBox(
-                      height: screenHeight*0.1,
+                      height: screenHeight * 0.1,
                     ),
-                    
                     Container(
                       color: Colors.transparent,
-                      height: screenHeight *0.9,
-                      width: screenWidth*0.95,
+                      height: screenHeight * 0.83,
+                      width: screenWidth * 0.95,
                       child: MapScreen(),
-                      
                     ),
                   ],
                 ),
@@ -107,6 +221,17 @@ class _MobileHomeState extends State<MobileHome> {
           ],
         ),
       ),
+      bottomNavigationBar: isAdLoaded
+          ? SizedBox(
+              height: bannerAd.size.height.toDouble(),
+              width: bannerAd.size.width.toDouble(),
+              child: AdWidget(ad: bannerAd),
+            )
+          : SizedBox(
+            child: Text(
+              'No cargado'
+            ),
+          ),
     );
   }
 }

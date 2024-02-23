@@ -1,6 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:parkit_now/utils/colors.dart';
 import 'package:parkit_now/utils/drawer_header.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class NavBar extends StatefulWidget {
@@ -14,9 +17,10 @@ class _NavBarState extends State<NavBar> {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      backgroundColor: Colors.grey.shade200,
+      backgroundColor: AppColors.primary,
       child: SingleChildScrollView(
         child: Container(
+          
           child: Column(
             children: [
               MyDrawerHeader(),
@@ -33,7 +37,7 @@ class _NavBarState extends State<NavBar> {
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
   return Container(
-    
+    color: AppColors.primary,
     padding: EdgeInsets.only(top: 15),
     child: Column(
       children: [
@@ -44,15 +48,14 @@ class _NavBarState extends State<NavBar> {
           currentPage == DrawerSections.misautos ? true : false, 'autos'
         ),
         menuItem(3, 'Ayuda y Soporte', Icons.help,
-          currentPage == DrawerSections.ayudaysoporte ? true : false, 'mobile-home'
+          currentPage == DrawerSections.ayudaysoporte ? true : false, 'ayuda'
         ),
         
-        menuItem(4, 'Configuración', Icons.settings,
-          currentPage == DrawerSections.configuracion ? true : false, 'mobile-home'
-        ),
-        SizedBox(height: screenHeight*0.2,),
+        
+        SizedBox(height: screenHeight*0.4,),
+        
         menuItem(
-              5,
+              4,
               'Cerrar Sesión',
               Icons.logout_rounded,
               currentPage == DrawerSections.configuracion ? true : false,
@@ -64,6 +67,7 @@ class _NavBarState extends State<NavBar> {
 Widget MyWebDrawerList(){
   var currentPage = DrawerSections.perfil;
   return Container(
+    
     
     padding: EdgeInsets.only(top: 15),
     child: Column(
@@ -78,11 +82,9 @@ Widget MyWebDrawerList(){
         menuItem(3, 'Estacionamiento', Icons.near_me_outlined,
           currentPage == DrawerSections.estacionamiento ? true : false, 'listado-reserva-vehiculo'
         ),
-        menuItem(4, 'Ajustes', Icons.settings_outlined,
-          currentPage == DrawerSections.configuracion ? true : false, 'listado-reserva-vehiculo'
-        ),
+        
         SizedBox(height: 250,),
-        menuItem(5, 'Cerrar Sesión', Icons.logout_rounded,
+        menuItem(4, 'Cerrar Sesión', Icons.logout_rounded,
           currentPage == DrawerSections.configuracion ? true : false, 'listado-reserva-vehiculo'
         ),
       ],
@@ -137,11 +139,20 @@ Widget MyWebDrawerList(){
 }
   Future signOut() async {
     bool inicio = true;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+    setState(() {
+      
+    });
     try {
       await FirebaseAuth.instance.signOut().then((value) => {
             print('Sesión cerrada con exito'),
-            Navigator.pushNamed(context, 'login-register', arguments: inicio)
+            Navigator.pushNamed(context, 'login-register', arguments: inicio),
+            
+            
           });
+          
+          
     } catch (e) {
       // Se ha producido un error durante el inicio de sesión.
       print('Error al cerrar sesión: $e');

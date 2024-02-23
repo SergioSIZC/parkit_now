@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:parkit_now/utils/colors.dart';
+import 'package:parkit_now/widgets/dropdownBtn.dart';
 import 'package:parkit_now/widgets/web_side_layout.dart';
 
 class MiEstacionamiento extends StatefulWidget {
@@ -45,24 +46,9 @@ class _MiEstacionamientoState extends State<MiEstacionamiento> {
                         ),
                       ),
                       Expanded(child: Container()),
-                      Column(
-                        children: [
-                          Text('Juan Pérez',
-                              style: TextStyle(
-                                  decoration: TextDecoration.none,
-                                  color: AppColors.primary,
-                                  fontSize: 20)),
-                          Text('Encargado',
-                              style: TextStyle(
-                                  decoration: TextDecoration.none,
-                                  color: Colors.grey,
-                                  fontSize: 15))
-                        ],
-                      ),
-                      Image(
-                        image: AssetImage('assets/images/user.png'),
-                        width: 50,
-                      )
+                      Material(
+                              child: MyDropDownButton(),
+                            )
                     ],
                   ),
               SizedBox(
@@ -141,13 +127,14 @@ class _MiEstacionamientoState extends State<MiEstacionamiento> {
                           Navigator.pushNamed(context, 'edit-est');
                         }, 
                         child: Text('Editar estacionamiento', style:TextStyle(
-                          fontSize: 30
+                          fontSize: 30,
+                          color:AppColors.primary
                         )),
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
-                          backgroundColor: Colors.grey[400]
+                          backgroundColor: Colors.grey[300]
                         )
                       )
                     ),
@@ -160,13 +147,14 @@ class _MiEstacionamientoState extends State<MiEstacionamiento> {
                           Navigator.pushNamed(context, 'edit-serv');
                         }, 
                         child: Text('Editar servicios adicionales', style:TextStyle(
-                          fontSize: 30
+                          fontSize: 30,
+                          color:AppColors.primary
                         )),
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
-                          backgroundColor: Colors.grey[400]
+                          backgroundColor: Colors.grey[300]
                         )
                       )
                     ),
@@ -175,14 +163,18 @@ class _MiEstacionamientoState extends State<MiEstacionamiento> {
                       height: 90,
                       width: 500,
                       child: ElevatedButton(
-                        onPressed: (){}, child: Text('Ver estacionamiento', style:TextStyle(
-                          fontSize: 30
+                        onPressed: (){
+                          Navigator.pushNamed(context, 'ver-est');
+                        }, 
+                        child: Text('Ver estacionamiento', style:TextStyle(
+                          fontSize: 30,
+                          color:AppColors.primary
                         )),
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
                           ),
-                          backgroundColor: Colors.grey[400]
+                          backgroundColor: Colors.grey[300]
                         )
                       )
                     ),
@@ -196,6 +188,7 @@ class _MiEstacionamientoState extends State<MiEstacionamiento> {
           )
         ),
         Spacer(),
+        
       ],
     );
   }
